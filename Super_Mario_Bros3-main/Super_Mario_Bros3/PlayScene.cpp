@@ -6,6 +6,9 @@
 #include "Textures.h"
 #include "Sprites.h"
 #include "Portal.h"
+#include "NoCollisionObject.h"
+#include "Rectangle.h"
+#include "Pipe.h"
 
 using namespace std;
 
@@ -27,10 +30,13 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath) :
 #define SCENE_SECTION_ANIMATION_SETS	5
 #define SCENE_SECTION_OBJECTS	6
 
-#define OBJECT_TYPE_MARIO	0
-#define OBJECT_TYPE_BRICK	1
-#define OBJECT_TYPE_GOOMBA	2
-#define OBJECT_TYPE_KOOPAS	3
+#define OBJECT_TYPE_MARIO		0
+#define OBJECT_TYPE_BRICK		1
+#define OBJECT_TYPE_GOOMBA		2
+#define OBJECT_TYPE_KOOPAS		3
+#define OBJECT_TYPE_NOCOLOBJ	4
+#define OBJECT_TYPE_RECT		5
+#define OBJECT_TYPE_PIPE		6
 
 #define OBJECT_TYPE_PORTAL	50
 
@@ -164,6 +170,9 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		obj = new CPortal(x, y, r, b, scene_id);
 	}
 	break;
+	case OBJECT_TYPE_NOCOLOBJ: obj = new CNoColObj(); break;
+	case OBJECT_TYPE_RECT: obj = new CRectangle(); break;
+	case OBJECT_TYPE_PIPE: obj = new CPipe(); break;
 	default:
 		DebugOut(L"[ERR] Invalid object type: %d\n", object_type);
 		return;
@@ -254,10 +263,20 @@ void CPlayScene::Update(DWORD dt)
 	player->GetPosition(cx, cy);
 
 	CGame* game = CGame::GetInstance();
-	cx -= game->GetScreenWidth() / 2;
-	cy -= game->GetScreenHeight() / 2;
+	float halfScreenWidth = game->GetScreenWidth() / 2;
+	float halfScreenHeight = game->GetScreenHeight() / 2;
 
-	CGame::GetInstance()->SetCamPos(cx, 0.0f /*cy*/);
+	cx -= halfScreenWidth;
+	cy -= halfScreenHeight;
+
+	if (cy <= -halfScreenWidth + 30) {
+		cy += halfScreenHeight;
+	}
+	else {
+		cy = 0;
+	}
+
+	CGame::GetInstance()->SetCamPos(cx, cy);
 }
 
 void CPlayScene::Render()
