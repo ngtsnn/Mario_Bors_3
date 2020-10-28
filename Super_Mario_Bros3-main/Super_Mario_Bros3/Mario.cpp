@@ -8,6 +8,8 @@
 #include "Goomba.h"
 #include "Portal.h"
 
+#include "Rectangle.h"
+
 CMario::CMario(float x, float y) : CGameObject()
 {
 	level = MARIO_LEVEL_BIG;
@@ -18,6 +20,32 @@ CMario::CMario(float x, float y) : CGameObject()
 	start_y = y;
 	this->x = x;
 	this->y = y;
+}
+
+void CMario::CalcPotentialCollisions(
+		vector<LPGAMEOBJECT> *coObjects,
+		vector<LPCOLLISIONEVENT> &coEvents) 
+{
+	for (UINT i = 0; i < coObjects->size(); i++)
+	{
+		LPCOLLISIONEVENT event = SweptAABBEx(coObjects->at(i));
+
+		if (dynamic_cast<CRectangle*>(coObjects->at(i)) && (event->ny > 0 || event->nx != 0)) {
+			delete event;
+			continue;
+		}
+
+		if (event->t > 0 && event->t <= 1.0f)
+		{
+			coEvents.push_back(event);
+		}
+		else
+		{
+			delete event;
+		}
+	}
+
+	std::sort(coEvents.begin(), coEvents.end(), CCollisionEvent::compare);
 }
 
 void CMario::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
@@ -52,23 +80,23 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 	}
 	else
 	{
-		float min_tx, min_ty, nx = 0, ny;
+		float min_tx, min_ty, nbx = 0, nby;
 		float rdx = 0;
 		float rdy = 0;
 
 		// TODO: This is a very ugly designed function!!!!
-		FilterCollision(coEvents, coEventsResult, min_tx, min_ty, nx, ny, rdx, rdy);
+		FilterCollision(coEvents, coEventsResult, min_tx, min_ty, nbx, nby, rdx, rdy);
 
 		// how to push back Mario if collides with a moving objects, what if Mario is pushed this way into another object?
-		//if (rdx != 0 && rdx!=dx)
-		//	x += nx*abs(rdx); 
+		/*if (rdx != 0 && rdx!=dx)
+			x += nx*abs(rdx);*/ 
 
 		// block every object first!
-		x += min_tx * dx + nx * 0.4f;
-		y += min_ty * dy + ny * 0.4f;
+		x += min_tx * dx + nbx * 0.4f;
+		y += min_ty * dy + nby * 0.4f;
 
-		if (nx != 0) vx = 0;
-		if (ny != 0) vy = 0;
+		if (nbx != 0) vx = 0;
+		if (nby != 0) vy = 0;
 
 
 		//

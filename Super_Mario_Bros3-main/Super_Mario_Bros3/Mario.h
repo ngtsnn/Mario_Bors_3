@@ -108,17 +108,22 @@
 
 #define MARIO_ANI_DIE					78
 
-
-#define MARIO_ANI_DIE				8
-
-#define	MARIO_LEVEL_SMALL	1
 #define	MARIO_LEVEL_BIG		2
+#define	MARIO_LEVEL_SMALL	1
+#define	MARIO_LEVEL_TAIL	3
+#define	MARIO_LEVEL_FIRE	4
 
 #define MARIO_BIG_BBOX_WIDTH  15
 #define MARIO_BIG_BBOX_HEIGHT 27
 
 #define MARIO_SMALL_BBOX_WIDTH  13
 #define MARIO_SMALL_BBOX_HEIGHT 15
+
+#define MARIO_TAIL_BBOX_WIDTH  21
+#define MARIO_TAIL_BBOX_HEIGHT 27
+
+#define MARIO_FIRE_BBOX_WIDTH  14
+#define MARIO_FIRE_BBOX_HEIGHT 27
 
 #define MARIO_UNTOUCHABLE_TIME 5000
 
@@ -135,6 +140,10 @@ public:
 	CMario(float x = 0.0f, float y = 0.0f);
 	virtual void Update(DWORD dt, vector<LPGAMEOBJECT>* colliable_objects = NULL);
 	virtual void Render();
+
+	void CalcPotentialCollisions(
+		vector<LPGAMEOBJECT> *coObjects,
+		vector<LPCOLLISIONEVENT> &coEvents);
 
 	void SetState(int state);
 	void SetLevel(int l) { level = l; }
