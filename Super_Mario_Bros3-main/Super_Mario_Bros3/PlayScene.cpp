@@ -309,6 +309,10 @@ void CPlayScenceKeyHandler::OnKeyDown(int KeyCode)
 	case DIK_SPACE:
 		mario->SetState(MARIO_STATE_JUMP);
 		break;
+	case DIK_B:
+		mario->SetLevel(MARIO_LEVEL_SMALL);
+		mario->SetState(MARIO_STATE_IDLE);
+		break;
 	case DIK_A:
 		mario->Reset();
 		break;
