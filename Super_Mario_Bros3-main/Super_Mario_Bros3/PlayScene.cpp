@@ -170,7 +170,7 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		obj = new CPortal(x, y, r, b, scene_id);
 	}
 	break;
-	case OBJECT_TYPE_NOCOLOBJ: obj = new CNoColObj(); break;
+	//case OBJECT_TYPE_NOCOLOBJ: obj = new CNoColObj(); break;
 	case OBJECT_TYPE_RECT: obj = new CRectangle(); break;
 	case OBJECT_TYPE_PIPE: obj = new CPipe(); break;
 	default:
@@ -269,8 +269,9 @@ void CPlayScene::Update(DWORD dt)
 	cx -= halfScreenWidth;
 	cy -= halfScreenHeight;
 
-	if (cy <= -halfScreenWidth + 30) {
-		cy += halfScreenHeight;
+	// check mario is on top of the screen
+	if (cy <= -(halfScreenWidth - 70)) {
+		cy += (halfScreenHeight - 30);
 	}
 	else {
 		cy = 0;
@@ -304,16 +305,26 @@ void CPlayScenceKeyHandler::OnKeyDown(int KeyCode)
 	//DebugOut(L"[INFO] KeyDown: %d\n", KeyCode);
 
 	CMario* mario = ((CPlayScene*)scence)->GetPlayer();
+
 	switch (KeyCode)
 	{
 	case DIK_SPACE:
-		mario->SetState(MARIO_STATE_JUMP);
+		if (mario->IsGrounded())
+			mario->SetState(MARIO_STATE_JUMP);
 		break;
-	case DIK_B:
+	case DIK_U:
 		mario->SetLevel(MARIO_LEVEL_SMALL);
-		mario->SetState(MARIO_STATE_IDLE);
 		break;
-	case DIK_A:
+	case DIK_I:
+		mario->SetLevel(MARIO_LEVEL_BIG);
+		break;
+	case DIK_O:
+		mario->SetLevel(MARIO_LEVEL_TAIL);
+		break;
+	case DIK_P:
+		mario->SetLevel(MARIO_LEVEL_FIRE);
+		break;
+	case DIK_Y:
 		mario->Reset();
 		break;
 	}
@@ -323,13 +334,29 @@ void CPlayScenceKeyHandler::KeyState(BYTE* states)
 {
 	CGame* game = CGame::GetInstance();
 	CMario* mario = ((CPlayScene*)scence)->GetPlayer();
+	float vx = 0, vy = 0;
+	mario->GetSpeed(vx, vy);
 
 	// disable control key when Mario die 
 	if (mario->GetState() == MARIO_STATE_DIE) return;
 	if (game->IsKeyDown(DIK_RIGHT))
-		mario->SetState(MARIO_STATE_WALKING_RIGHT);
+	{
+		if (vx < 0) {
+			mario->SetState(MARIO_STATE_BRAKING_LEFT);
+		}
+		else {
+			mario->SetState(MARIO_STATE_WALKING_RIGHT);
+		}
+	}
 	else if (game->IsKeyDown(DIK_LEFT))
-		mario->SetState(MARIO_STATE_WALKING_LEFT);
+	{
+		if (vx > 0) {
+			mario->SetState(MARIO_STATE_BRAKING_RIGHT);
+		}
+		else {
+			mario->SetState(MARIO_STATE_WALKING_LEFT);
+		}
+	}
 	else
 		mario->SetState(MARIO_STATE_IDLE);
 }
