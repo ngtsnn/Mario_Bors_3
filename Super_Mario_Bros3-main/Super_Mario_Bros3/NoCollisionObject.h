@@ -8,6 +8,8 @@ class CNoColObj : public CGameObject
 {
 public:
 	//void Update(DWORD dt, vector<LPGAMEOBJECT>* colliable_objects = NULL);
+	CNoColObj();
+
 	virtual void Render();
 	virtual void GetBoundingBox(float& l, float& t, float& r, float& b);
 };

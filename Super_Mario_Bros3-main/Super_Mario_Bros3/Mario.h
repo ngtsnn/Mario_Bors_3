@@ -1,14 +1,14 @@
 #pragma once
 #include "GameObject.h"
 
-#define MARIO_WALKING_SPEED		0.3f 
+#define MARIO_WALKING_SPEED		0.15f 
 //0.1f
 #define MARIO_JUMP_SPEED_Y			0.5f
 #define MARIO_JUMP_DEFLECT_SPEED	0.2f
 #define MARIO_GRAVITY				0.002f
 #define MARIO_DIE_DEFLECT_SPEED		0.5f
 #define MARIO_ACCELERATION			0.002f
-#define MARIO_MUY_FRICTION			0.005f
+#define MARIO_MUY_FRICTION			0.002f
 
 #define MARIO_STATE_IDLE			0
 #define MARIO_STATE_WALKING_RIGHT	100

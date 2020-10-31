@@ -43,7 +43,8 @@ struct CCollisionEvent
 
 class CGameObject
 {
-public:
+protected:
+
 
 	float x;
 	float y;
@@ -55,6 +56,8 @@ public:
 	float vy;
 
 	int nx;
+
+	bool hasCollision;
 
 	int state;
 
@@ -93,6 +96,7 @@ public:
 	virtual void Render() = 0;
 	virtual void SetState(int state) { this->state = state; }
 
+	bool HasCollision() { return this->hasCollision; }
 
 	~CGameObject();
 };

@@ -10,9 +10,10 @@
 
 CGameObject::CGameObject()
 {
-	x = y = 0;
-	vx = vy = 0;
-	nx = 1;
+	this->x = this->y = 0;
+	this->vx = this->vy = 0;
+	this->nx = 1;
+	this->hasCollision = true;
 }
 
 void CGameObject::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
@@ -27,6 +28,7 @@ void CGameObject::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 */
 LPCOLLISIONEVENT CGameObject::SweptAABBEx(LPGAMEOBJECT coO)
 {
+
 	float sl, st, sr, sb;		// static object bbox
 	float ml, mt, mr, mb;		// moving object bbox
 	float t, nx, ny;
@@ -69,6 +71,10 @@ void CGameObject::CalcPotentialCollisions(
 {
 	for (UINT i = 0; i < coObjects->size(); i++)
 	{
+		if (!coObjects->at(i)->HasCollision()) {
+			continue;
+		}
+
 		LPCOLLISIONEVENT e = SweptAABBEx(coObjects->at(i));
 
 		if (e->t > 0 && e->t <= 1.0f)

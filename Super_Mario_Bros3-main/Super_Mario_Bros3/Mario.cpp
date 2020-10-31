@@ -30,6 +30,10 @@ void CMario::CalcPotentialCollisions(
 {
 	for (UINT i = 0; i < coObjects->size(); i++)
 	{
+		if (!coObjects->at(i)->HasCollision()) {
+			continue;
+		}
+
 		LPCOLLISIONEVENT event = SweptAABBEx(coObjects->at(i));
 
 		//check if mario will collide Rectangle in down, right, left side 

@@ -170,7 +170,7 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		obj = new CPortal(x, y, r, b, scene_id);
 	}
 	break;
-	//case OBJECT_TYPE_NOCOLOBJ: obj = new CNoColObj(); break;
+	case OBJECT_TYPE_NOCOLOBJ: obj = new CNoColObj(); break;
 	case OBJECT_TYPE_RECT: obj = new CRectangle(); break;
 	case OBJECT_TYPE_PIPE: obj = new CPipe(); break;
 	default:
