@@ -14,6 +14,7 @@ CGameObject::CGameObject()
 	this->vx = this->vy = 0;
 	this->nx = 1;
 	this->hasCollision = true;
+	this->isUsingGravity = false;
 }
 
 void CGameObject::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
@@ -21,6 +22,11 @@ void CGameObject::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 	this->dt = dt;
 	dx = vx * dt;
 	dy = vy * dt;
+
+
+	// Simple fall down
+	if (this->isUsingGravity)
+		this->vy += GRAVITY * dt;
 }
 
 /*

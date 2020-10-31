@@ -11,6 +11,7 @@
 using namespace std;
 
 #define ID_TEX_BBOX -100		// special texture to draw object bounding box
+#define GRAVITY				0.002f
 
 class CGameObject;
 typedef CGameObject* LPGAMEOBJECT;
@@ -45,7 +46,6 @@ class CGameObject
 {
 protected:
 
-
 	float x;
 	float y;
 
@@ -58,6 +58,7 @@ protected:
 	int nx;
 
 	bool hasCollision;
+	bool isUsingGravity;
 
 	int state;
 

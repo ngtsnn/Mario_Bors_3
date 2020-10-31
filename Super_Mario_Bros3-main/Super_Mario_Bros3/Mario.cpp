@@ -22,6 +22,7 @@ CMario::CMario(float x, float y) : CGameObject()
 	this->y = y;
 	this->nx = 1;
 	this->isGrounded = false;
+	this->isUsingGravity = true;
 }
 
 void CMario::CalcPotentialCollisions(
@@ -60,10 +61,6 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {
 	// Calculate dx, dy 
 	CGameObject::Update(dt);
-
-
-	// Simple fall down
-	vy += MARIO_GRAVITY * dt;
 
 	vector<LPCOLLISIONEVENT> coEvents;
 	vector<LPCOLLISIONEVENT> coEventsResult;
