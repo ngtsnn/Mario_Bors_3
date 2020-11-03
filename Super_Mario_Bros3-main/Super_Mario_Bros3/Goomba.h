@@ -27,6 +27,7 @@ public:
 	virtual void SetState(int state);
 	virtual void OnCollisionEnter(LPCOLLISIONEVENT collision);
 	virtual void OnTriggerEnter(LPCOLLISIONEVENT trigger);
+	virtual void Reset();
 };
 
 class CParaGoomba : public CGoomba {

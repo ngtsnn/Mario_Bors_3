@@ -7,7 +7,7 @@
 
 #include "Goomba.h"
 #include "Portal.h"
-
+#include "Enemy.h"
 #include "Rectangle.h"
 
 CMario::CMario(float x, float y) : CGameObject()
@@ -74,7 +74,10 @@ void CMario::OnCollisionEnter(LPCOLLISIONEVENT collisionEvent) {
 }
 
 void CMario::OnTriggerEnter(LPCOLLISIONEVENT triggerEvent) {
-
+	if (dynamic_cast<CEnemySpawner*>(triggerEvent->obj)) {
+		CEnemySpawner* spawner = dynamic_cast<CEnemySpawner*>(triggerEvent->obj);
+		spawner->SpawnEnemy();
+	}
 }
 
 void CMario::Render()

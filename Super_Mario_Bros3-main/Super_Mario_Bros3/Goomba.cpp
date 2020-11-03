@@ -2,6 +2,13 @@
 
 CGoomba::CGoomba(float x, float y)
 {
+	this->startX = x;
+	this->startY = y;
+	this->x = x;
+	this->y = y;
+	this->isUsingGravity = true;
+	this->collisionState = COLLISION;
+	this->isStatic = false;
 	SetState(GOOMBA_STATE_WALKING);
 }
 
@@ -72,5 +79,10 @@ void CGoomba::SetState(int state)
 {
 	CGameObject::SetState(state);
 	
+}
+
+void CGoomba::Reset() {
+	CEnemy::Reset();
+	this->state = GOOMBA_STATE_WALKING;
 }
 

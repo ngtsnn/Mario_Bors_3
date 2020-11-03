@@ -1,6 +1,7 @@
 #include "Enemy.h"
 #include "Goomba.h"
 #include "Koopas.h"
+#include "Mario.h"
 
 //#Enemy Section
 CEnemy::CEnemy(float x, float y) {
@@ -22,6 +23,7 @@ CEnemy::CEnemy() {
 void CEnemy::Reset() {
 	this->x = startX;
 	this->y = startY;
+	this->collisionState = COLLISION;
 }
 
 
@@ -38,7 +40,7 @@ CEnemySpawner::CEnemySpawner(float l, float t, float r, float b)
 
 void CEnemySpawner::Render()
 {
-	RenderBoundingBox();
+	//RenderBoundingBox();
 }
 
 void CEnemySpawner::GetBoundingBox(float& l, float& t, float& r, float& b)
@@ -52,4 +54,7 @@ void CEnemySpawner::GetBoundingBox(float& l, float& t, float& r, float& b)
 
 void CEnemySpawner::SpawnEnemy() {
 	this->enemy->Reset();
+}
+
+void CEnemySpawner::OnTriggerEnter(LPCOLLISIONEVENT trigger) {
 }

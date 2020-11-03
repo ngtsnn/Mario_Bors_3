@@ -161,7 +161,7 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 
 		DebugOut(L"[INFO] Player object created!\n");
 		break;
-	case OBJECT_TYPE_GOOMBA: obj = new CGoomba(); break;
+	//case OBJECT_TYPE_GOOMBA: obj = new CGoomba(x, y); break;
 	case OBJECT_TYPE_BRICK: obj = new CBrick(); break;
 	case OBJECT_TYPE_KOOPAS: obj = new CKoopas(); break;
 	case OBJECT_TYPE_PORTAL:
@@ -175,12 +175,26 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	case OBJECT_TYPE_NOCOLOBJ: obj = new CNoColObj(); break;
 	case OBJECT_TYPE_RECT: obj = new CRectangle(); break;
 	case OBJECT_TYPE_PIPE: obj = new CPipe(); break;
-	/*case OBJECT_TYPE_ENEMY_SPAWNER: {
+	case OBJECT_TYPE_ENEMY_SPAWNER: {
 		float r = atof(tokens[4].c_str());
 		float b = atof(tokens[5].c_str());
-		obj = new CEnemySpawner(x, y, r, b);
+		int type = atof(tokens[6].c_str());
+		float enemyX = atof(tokens[7].c_str());
+		float enemyY = atof(tokens[8].c_str());
+		float enemyAnimSetId = atof(tokens[9].c_str());
+		CEnemySpawner* newSpawner = new CEnemySpawner(x, y, r, b);
+		switch (type) {
+		case OBJECT_TYPE_GOOMBA: 
+			LPENEMY newEnemy = new CGoomba(enemyX, enemyY);
+			LPANIMATION_SET animSet = animation_sets->Get(enemyAnimSetId);
+			newEnemy->SetAnimationSet(animSet);
+			newSpawner->AddEnemy(newEnemy);
+			objects.push_back(newEnemy);
+			break;
+		}
+		obj = newSpawner;
 		break;
-	}*/
+	}
 	default:
 		DebugOut(L"[ERR] Invalid object type: %d\n", object_type);
 		return;
