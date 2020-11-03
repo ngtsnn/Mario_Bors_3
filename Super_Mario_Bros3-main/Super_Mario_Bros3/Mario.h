@@ -146,15 +146,15 @@ public:
 	virtual void Update(DWORD dt, vector<LPGAMEOBJECT>* colliable_objects = NULL);
 	virtual void Render();
 
-	void CalcPotentialCollisions(
-		vector<LPGAMEOBJECT> *coObjects,
-		vector<LPCOLLISIONEVENT> &coEvents);
+	virtual void OnCollisionEnter(LPCOLLISIONEVENT collisionEvent);
+	virtual void OnTriggerEnter(LPCOLLISIONEVENT triggerEvent);
 
 	void SetState(int state);
 	void SetLevel(int l);
 	void StartUntouchable() { untouchable = 1; untouchable_start = GetTickCount(); }
 
 	bool IsGrounded() { return this->isGrounded; }
+
 
 	void Reset();
 

@@ -2,7 +2,7 @@
 #include "NoCollisionObject.h"
 
 CNoColObj::CNoColObj() {
-	this->hasCollision = false;
+	this->collisionState = NONE;
 }
 
 void CNoColObj::Render() {

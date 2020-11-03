@@ -23,143 +23,58 @@ CMario::CMario(float x, float y) : CGameObject()
 	this->nx = 1;
 	this->isGrounded = false;
 	this->isUsingGravity = true;
-}
-
-void CMario::CalcPotentialCollisions(
-		vector<LPGAMEOBJECT> *coObjects,
-		vector<LPCOLLISIONEVENT> &coEvents) 
-{
-	for (UINT i = 0; i < coObjects->size(); i++)
-	{
-		if (!coObjects->at(i)->HasCollision()) {
-			continue;
-		}
-
-		LPCOLLISIONEVENT event = SweptAABBEx(coObjects->at(i));
-
-		//check if mario will collide Rectangle in down, right, left side 
-		//=> we skip this event. I will optimise it later.
-		if (dynamic_cast<CRectangle*>(coObjects->at(i)) && (event->ny > 0 || event->nx != 0)) {
-			delete event;
-			continue;
-		}
-
-		if (event->t > 0 && event->t <= 1.0f)
-		{
-			coEvents.push_back(event);
-		}
-		else
-		{
-			delete event;
-		}
-	}
-
-	std::sort(coEvents.begin(), coEvents.end(), CCollisionEvent::compare);
+	this->isStatic = false;
+	this->collisionState = COLLISION;
 }
 
 void CMario::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {
-	// Calculate dx, dy 
-	CGameObject::Update(dt);
+	//Do the collisions
+	CGameObject::Update(dt, coObjects);
 
-	vector<LPCOLLISIONEVENT> coEvents;
-	vector<LPCOLLISIONEVENT> coEventsResult;
+}
 
-	coEvents.clear();
-
-	// turn off collision when die 
-	if (state != MARIO_STATE_DIE)
-		CalcPotentialCollisions(coObjects, coEvents);
-
-	// reset untouchable timer if untouchable time has passed
-	if (GetTickCount() - untouchable_start > MARIO_UNTOUCHABLE_TIME)
+void CMario::OnCollisionEnter(LPCOLLISIONEVENT collisionEvent) {
+	LPCOLLISIONEVENT e = collisionEvent;
+	if (dynamic_cast<CGoomba*>(e->obj)) // if e->obj is Goomba 
 	{
-		untouchable_start = 0;
-		untouchable = 0;
-	}
+		CGoomba* goomba = dynamic_cast<CGoomba*>(e->obj);
 
-	// No collision occured, proceed normally
-	if (coEvents.size() == 0)
-	{
-		x += dx;
-		y += dy;
-	}
-	else
-	{
-		float min_tx, min_ty, nbx = 0, nby;
-		float rdx = 0;
-		float rdy = 0;
-
-		// TODO: This is a very ugly designed function!!!!
-		FilterCollision(coEvents, coEventsResult, min_tx, min_ty, nbx, nby, rdx, rdy);
-
-		// how to push back Mario if collides with a moving objects, what if Mario is pushed this way into another object?
-		/*if (rdx != 0 && rdx!=dx)
-			x += nx*abs(rdx);*/ 
-
-		// block every object first!
-		x += min_tx * dx + nbx * 0.4f;
-		y += min_ty * dy + nby * 0.4f;
-
-		//check Mario is on the ground
-		if (nby < 0) {
-			this->isGrounded = true;
-		}
-		else {
-			this->isGrounded = false;
-		}
-
-		if (nbx != 0) vx = 0;
-		if (nby != 0) vy = 0;
-
-
-		//
-		// Collision logic with other objects
-		//
-		for (UINT i = 0; i < coEventsResult.size(); i++)
+		// jump on top >> kill Goomba and deflect a bit 
+		if (e->ny < 0)
 		{
-			LPCOLLISIONEVENT e = coEventsResult[i];
-
-			if (dynamic_cast<CGoomba*>(e->obj)) // if e->obj is Goomba 
+			if (goomba->GetState() != GOOMBA_STATE_DIE)
 			{
-				CGoomba* goomba = dynamic_cast<CGoomba*>(e->obj);
-
-				// jump on top >> kill Goomba and deflect a bit 
-				if (e->ny < 0)
-				{
-					if (goomba->GetState() != GOOMBA_STATE_DIE)
-					{
-						goomba->SetState(GOOMBA_STATE_DIE);
-						vy = -MARIO_JUMP_DEFLECT_SPEED;
-					}
-				}
-				else if (e->nx != 0)
-				{
-					if (untouchable == 0)
-					{
-						if (goomba->GetState() != GOOMBA_STATE_DIE)
-						{
-							if (level > MARIO_LEVEL_SMALL)
-							{
-								level = MARIO_LEVEL_SMALL;
-								StartUntouchable();
-							}
-							else
-								SetState(MARIO_STATE_DIE);
-						}
-					}
-				}
-			} // if Goomba
-			else if (dynamic_cast<CPortal*>(e->obj))
-			{
-				CPortal* p = dynamic_cast<CPortal*>(e->obj);
-				CGame::GetInstance()->SwitchScene(p->GetSceneId());
+				goomba->SetState(GOOMBA_STATE_DIE);
+				vy = -MARIO_JUMP_DEFLECT_SPEED;
 			}
 		}
+		else if (e->nx != 0)
+		{
+			if (untouchable == 0)
+			{
+				if (goomba->GetState() != GOOMBA_STATE_DIE)
+				{
+					if (level > MARIO_LEVEL_SMALL)
+					{
+						this->level--;
+						StartUntouchable();
+					}
+					else
+						SetState(MARIO_STATE_DIE);
+				}
+			}
+		}
+	} // if Goomba
+	else if (dynamic_cast<CPortal*>(e->obj))
+	{
+		CPortal* p = dynamic_cast<CPortal*>(e->obj);
+		CGame::GetInstance()->SwitchScene(p->GetSceneId());
 	}
+}
 
-	// clean up collision events
-	for (UINT i = 0; i < coEvents.size(); i++) delete coEvents[i];
+void CMario::OnTriggerEnter(LPCOLLISIONEVENT triggerEvent) {
+
 }
 
 void CMario::Render()
@@ -290,7 +205,7 @@ void CMario::Render()
 
 	animation_set->at(ani)->Render(x, y, alpha);
 
-	RenderBoundingBox();
+	//RenderBoundingBox();
 }
 
 void CMario::SetLevel(int l) {
@@ -328,7 +243,8 @@ void CMario::SetState(int state)
 		nx = -1;
 		break;
 	case MARIO_STATE_JUMP:
-		// TODO: need to check if Mario is *current* on a platform before allowing to jump again
+		//if (this->vy <= 0.03f && this->vy > -0.03f)
+		//if (this->isGrounded == 1)
 		vy = -MARIO_JUMP_SPEED_Y;
 		break;
 	case MARIO_STATE_IDLE:
@@ -336,6 +252,7 @@ void CMario::SetState(int state)
 		break;
 	case MARIO_STATE_DIE:
 		vy = -MARIO_DIE_DEFLECT_SPEED;
+		this->collisionState = TRIGGER;
 		break;
 	}
 }
@@ -375,6 +292,10 @@ void CMario::Reset()
 	SetPosition(start_x, start_y);
 	this->nx = 1;
 	SetSpeed(0, 0);
+	this->isGrounded = false;
+	this->isUsingGravity = true;
+	this->isStatic = false;
+	this->collisionState = COLLISION;
 }
 
 float CMario::Clamp(float value, float min, float max) {

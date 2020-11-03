@@ -13,6 +13,12 @@ using namespace std;
 #define ID_TEX_BBOX -100		// special texture to draw object bounding box
 #define GRAVITY				0.002f
 
+enum COLLISIONSTATE {
+	TRIGGER = -1,
+	NONE = 0,
+	COLLISION = 1
+};
+
 class CGameObject;
 typedef CGameObject* LPGAMEOBJECT;
 
@@ -42,6 +48,8 @@ struct CCollisionEvent
 };
 
 
+
+
 class CGameObject
 {
 protected:
@@ -57,8 +65,10 @@ protected:
 
 	int nx;
 
-	bool hasCollision;
+	COLLISIONSTATE collisionState;
+	bool hasPlatformEffect;
 	bool isUsingGravity;
+	bool isStatic;
 
 	int state;
 
@@ -79,7 +89,7 @@ public:
 	void SetAnimationSet(LPANIMATION_SET ani_set) { animation_set = ani_set; }
 
 	LPCOLLISIONEVENT SweptAABBEx(LPGAMEOBJECT coO);
-	void CalcPotentialCollisions(vector<LPGAMEOBJECT>* coObjects, vector<LPCOLLISIONEVENT>& coEvents);
+	void CalcPotentialCollisions(vector<LPGAMEOBJECT>* coObjects, vector<LPCOLLISIONEVENT>& coEvents, vector<LPCOLLISIONEVENT>& trgEvents);
 	void FilterCollision(
 		vector<LPCOLLISIONEVENT>& coEvents,
 		vector<LPCOLLISIONEVENT>& coEventsResult,
@@ -97,7 +107,10 @@ public:
 	virtual void Render() = 0;
 	virtual void SetState(int state) { this->state = state; }
 
-	bool HasCollision() { return this->hasCollision; }
+	virtual void OnCollisionEnter(LPCOLLISIONEVENT collionEvent){}
+	virtual void OnTriggerEnter(LPCOLLISIONEVENT triggerEvent){}
+
+	COLLISIONSTATE GetCollisionState() { return this->collisionState; }
 
 	~CGameObject();
 };

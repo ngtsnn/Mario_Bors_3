@@ -1,7 +1,13 @@
 #include "Goomba.h"
-CGoomba::CGoomba()
+
+CGoomba::CGoomba(float x, float y)
 {
 	SetState(GOOMBA_STATE_WALKING);
+}
+
+CGoomba::CGoomba() {
+	SetState(GOOMBA_STATE_WALKING);
+	this->nx = -1;
 }
 
 void CGoomba::GetBoundingBox(float& left, float& top, float& right, float& bottom)
@@ -24,16 +30,30 @@ void CGoomba::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 	// TO-DO: make sure Goomba can interact with the world and to each of them too!
 	// 
 
-	x += dx;
-	y += dy;
-
-	if (vx < 0 && x < 0) {
-		x = 0; vx = -vx;
+	// Enemy AI in here
+	switch (this->state)
+	{
+	case GOOMBA_STATE_DIE:
+		y += GOOMBA_BBOX_HEIGHT - GOOMBA_BBOX_HEIGHT_DIE + 1;
+		vx = 0;
+		vy = 0;
+		this->collisionState = NONE;
+		break;
+	case GOOMBA_STATE_WALKING:
+		if (this->vx == 0) {
+			vx = -GOOMBA_WALKING_SPEED;
+		}
+		break;
 	}
+}
 
-	if (vx > 0 && x > 290) {
-		x = 290; vx = -vx;
-	}
+void CGoomba::OnCollisionEnter(LPCOLLISIONEVENT collision) {
+	if (collision->nx != 0.0f)
+		this->vx = -this->vx;
+}
+
+void CGoomba::OnTriggerEnter(LPCOLLISIONEVENT collision) {
+
 }
 
 void CGoomba::Render()
@@ -51,14 +71,6 @@ void CGoomba::Render()
 void CGoomba::SetState(int state)
 {
 	CGameObject::SetState(state);
-	switch (state)
-	{
-	case GOOMBA_STATE_DIE:
-		y += GOOMBA_BBOX_HEIGHT - GOOMBA_BBOX_HEIGHT_DIE + 1;
-		vx = 0;
-		vy = 0;
-		break;
-	case GOOMBA_STATE_WALKING:
-		vx = -GOOMBA_WALKING_SPEED;
-	}
+	
 }
+

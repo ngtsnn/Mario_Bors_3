@@ -30,13 +30,15 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath) :
 #define SCENE_SECTION_ANIMATION_SETS	5
 #define SCENE_SECTION_OBJECTS	6
 
-#define OBJECT_TYPE_MARIO		0
-#define OBJECT_TYPE_BRICK		1
-#define OBJECT_TYPE_GOOMBA		2
-#define OBJECT_TYPE_KOOPAS		3
-#define OBJECT_TYPE_NOCOLOBJ	4
-#define OBJECT_TYPE_RECT		5
-#define OBJECT_TYPE_PIPE		6
+#define OBJECT_TYPE_MARIO				0
+#define OBJECT_TYPE_BRICK				1
+#define OBJECT_TYPE_GOOMBA				20
+#define OBJECT_TYPE_PARA_GOOMBA			21
+#define OBJECT_TYPE_KOOPAS				3
+#define OBJECT_TYPE_NOCOLOBJ			4
+#define OBJECT_TYPE_RECT				5
+#define OBJECT_TYPE_PIPE				6
+#define OBJECT_TYPE_ENEMY_SPAWNER		9
 
 #define OBJECT_TYPE_PORTAL	50
 
@@ -173,6 +175,12 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	case OBJECT_TYPE_NOCOLOBJ: obj = new CNoColObj(); break;
 	case OBJECT_TYPE_RECT: obj = new CRectangle(); break;
 	case OBJECT_TYPE_PIPE: obj = new CPipe(); break;
+	/*case OBJECT_TYPE_ENEMY_SPAWNER: {
+		float r = atof(tokens[4].c_str());
+		float b = atof(tokens[5].c_str());
+		obj = new CEnemySpawner(x, y, r, b);
+		break;
+	}*/
 	default:
 		DebugOut(L"[ERR] Invalid object type: %d\n", object_type);
 		return;
@@ -277,6 +285,11 @@ void CPlayScene::Update(DWORD dt)
 		cy = 0;
 	}
 
+	//don't move camera when mario is out left side
+	if (cx < 0) {
+		cx = 0;
+	}
+
 	CGame::GetInstance()->SetCamPos(cx, cy);
 }
 
@@ -309,8 +322,7 @@ void CPlayScenceKeyHandler::OnKeyDown(int KeyCode)
 	switch (KeyCode)
 	{
 	case DIK_SPACE:
-		if (mario->IsGrounded())
-			mario->SetState(MARIO_STATE_JUMP);
+		mario->SetState(MARIO_STATE_JUMP);
 		break;
 	case DIK_U:
 		mario->SetLevel(MARIO_LEVEL_SMALL);

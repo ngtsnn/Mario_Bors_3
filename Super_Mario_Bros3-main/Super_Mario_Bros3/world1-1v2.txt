@@ -1330,7 +1330,7 @@
 
 [OBJECTS]
 # type	x	y	ani_set_id	extra_settings per object type
-# type: 0 = Mario , 1 = Brick, 2 = Goomba, 3 = Koopas, 4 = NoCollisionObjects 5= RECT, 6=PIPE
+# type: 0=Mario , 1=Brick, 2=Goomba, 3=Koopas, 4=NoCollisionObjects 5=RECT, 6=PIPE, 9=EnemySpawner
 
 #SECTION 1
 
@@ -2297,20 +2297,20 @@
 1	2272	38	402
 #ENDSECTION 3
 
+#ENEMY SPAWNER
+#id	l(x)	t(y)	anim_set_id
+#GOOMBA
+9	80	35	0	340	150	
 
-
-# MARIO ALWAY THE LAST TO BE DRAW
-#0	17	115	1
-0	630	80	1
 # GOOMBA 
-2	224	134	88
+20	224	134	88
 #3	200	102	89
-2	528	134	88
-2	832	115	88
-2	880	115	88
+20	528	134	88
+20	832	115	88
+20	880	115	88
 
 #GOOMBA_ ĐỎ _BAY
-11	944	115	88
+21	944	115	88
 	
 #KOOPA XANH_BAY
 7	1328	27	89
@@ -2321,6 +2321,11 @@
 #KOOPA ĐỎ_BỘ
 8	576	91	89
 8	2096	91	89
+
+# MARIO ALWAY THE LAST TO BE DRAW
+0	20	115	1
+#0	630	80	1
+
 
 # --- SCENE PORTAL ----
 # type	l	t	ani_set_id	r	b	scene_id
