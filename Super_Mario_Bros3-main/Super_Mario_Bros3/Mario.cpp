@@ -38,11 +38,31 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 	if (state == MARIO_STATE_DIE) {
 		return;
 	}
+	
+	//reset running stack
+	if (abs(this->vx) <= MARIO_WALKING_SPEED) {
+		this->runningStack = 0;
+	}
 
+	//reset untouchable state
 	if (GetTickCount() - untouchable_start > MARIO_UNTOUCHABLE_TIME)
 	{
 		untouchable_start = 0;
 		untouchable = 0;
+	}
+
+	//reset kicking
+	if (GetTickCount() - kickingStartTime > MARIO_KICKING_TIME)
+	{
+		kickingStartTime = 0;
+		isKicking = false;
+	}
+
+	//reset tailing
+	if (GetTickCount() - tailingStartTime > MARIO_TAILING_TIME)
+	{
+		isTailing = false;
+		tailingStartTime = 0;
 	}
 	
 
@@ -97,11 +117,58 @@ void CMario::OnTriggerEnter(LPCOLLISIONEVENT triggerEvent) {
 void CMario::Render()
 {
 	int ani = -1;
-	if (state == MARIO_STATE_DIE)
+	//DIE
+	if (this->state == MARIO_STATE_DIE)
 		ani = MARIO_ANI_DIE;
 	//else if (vy != 0) {
 	//	ani = MARIO_ANI_SMALL_JUMPING_RIGHT;
 	//} //JUMP
+
+	//TALING
+	else if (isTailing) {
+		if (this->nx < 0)
+			ani = MARIO_ANI_TAIL_TAILING_LEFT;
+		else
+			ani = MARIO_ANI_TAIL_TAILING_RIGHT;
+	} //TAILING
+
+	//KICKING
+	else if (isKicking) {
+		if (level == MARIO_LEVEL_BIG) {
+			if (nx < 0) {
+				ani = MARIO_ANI_BIG_KICKING_LEFT;
+			}
+			else {
+				ani = MARIO_ANI_BIG_KICKING_RIGHT;
+			}
+		} 
+		else if (level == MARIO_LEVEL_SMALL) {
+			if (nx < 0) {
+				ani = MARIO_ANI_SMALL_KICKING_LEFT;
+			}
+			else {
+				ani = MARIO_ANI_SMALL_KICKING_RIGHT;
+			}
+		}
+		else if (level == MARIO_LEVEL_TAIL) {
+			if (nx < 0) {
+				ani = MARIO_ANI_TAIL_KICKING_LEFT;
+			}
+			else {
+				ani = MARIO_ANI_TAIL_KICKING_RIGHT;
+			}
+		}
+		else if (level == MARIO_LEVEL_FIRE) {
+			if (nx < 0) {
+				ani = MARIO_ANI_FIRE_KICKING_LEFT;
+			}
+			else {
+				ani = MARIO_ANI_FIRE_KICKING_RIGHT;
+			}
+		}
+	}
+
+	//MOVING
 	else {
 		if (level == MARIO_LEVEL_BIG)
 		{
@@ -272,7 +339,6 @@ void CMario::SetState(int state)
 	{
 	case MARIO_STATE_BRAKING_LEFT:
 		this->vx += (MARIO_ACCELERATION * dt * .2f);
-		this->runningStack = 0;
 		break;
 	case MARIO_STATE_WALKING_RIGHT:
 		//move faster in time
@@ -280,7 +346,6 @@ void CMario::SetState(int state)
 		//clamp the velocity
 		this->vx = this->Clamp(this->vx, -MARIO_WALKING_SPEED, MARIO_WALKING_SPEED);
 		nx = 1;
-		this->runningStack = 0;
 		break;
 	case MARIO_STATE_RUNNING_RIGHT:
 		//move faster in time
@@ -295,7 +360,6 @@ void CMario::SetState(int state)
 		break;
 	case MARIO_STATE_BRAKING_RIGHT:
 		this->vx += (-MARIO_ACCELERATION * dt * .5f);
-		this->runningStack = 0;
 		this->runningStartTime = 0;
 		break;
 	case MARIO_STATE_WALKING_LEFT:
@@ -304,7 +368,6 @@ void CMario::SetState(int state)
 		//clamp the velocity
 		this->vx = this->Clamp(this->vx, -MARIO_WALKING_SPEED, MARIO_WALKING_SPEED);
 		nx = -1;
-		this->runningStack = 0;
 		break;
 	case MARIO_STATE_RUNNING_LEFT:
 		//move faster in time
@@ -321,12 +384,20 @@ void CMario::SetState(int state)
 	case MARIO_STATE_JUMP:
 		//if (this->vy <= 0.03f && this->vy > -0.03f)
 		//if (this->isGrounded == 1)
-		this->runningStack = 0;
 		vy = -MARIO_JUMP_SPEED_Y;
 		break;
 	case MARIO_STATE_IDLE:
 		this->vx -= this->vx * MARIO_MUY_FRICTION * dt * 1.2f;
-		this->runningStack = 0;
+		break;
+	case MARIO_STATE_TURNING_TAIL:
+		this->vx = 0;
+		this->isTailing = true;
+		this->tailingStartTime = GetTickCount();
+		break;
+	case MARIO_STATE_KICK:
+		this->isKicking = true;
+		this->vx = 0;
+		this->kickingStartTime = GetTickCount();
 		break;
 	case MARIO_STATE_DIE:
 		vy = -MARIO_DIE_DEFLECT_SPEED;

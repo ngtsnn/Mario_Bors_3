@@ -335,10 +335,13 @@ void CPlayScenceKeyHandler::OnKeyDown(int KeyCode)
 	//DebugOut(L"[INFO] KeyDown: %d\n", KeyCode);
 
 	CMario* mario = ((CPlayScene*)scence)->GetPlayer();
+
 	switch (KeyCode)
 	{
-	/*case DIK_X:
-		break;*/
+	case DIK_X:
+		if (mario->GetLevel() == MARIO_LEVEL_TAIL && !mario->IsTailing())
+			mario->SetState(MARIO_STATE_TURNING_TAIL);
+		break;
 	case DIK_Z:
 		mario->SetState(MARIO_STATE_JUMP);
 		break;

@@ -155,7 +155,7 @@ class CMario : public CGameObject
 	bool isHolding = 0;
 	
 	bool isTailing = 0;
-	DWORD TailingStartTime;
+	DWORD tailingStartTime;
 
 	float start_x;			// initial position of Mario at scene
 	float start_y;
