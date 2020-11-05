@@ -127,7 +127,7 @@ void CParaGoomba::GetBoundingBox(float& left, float& top, float& right, float& b
 	if (state == GOOMBA_STATE_DIE)
 		bottom = y + GOOMBA_BBOX_HEIGHT_DIE;
 	else
-		bottom = y + PARA_GOOMBA_BBOX_HEIGHT;
+		bottom = y + GOOMBA_NORMAL_BBOX_HEIGHT;
 }
 
 void CParaGoomba::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects) {
@@ -193,10 +193,24 @@ void CParaGoomba::Render() {
 		ani = PARA_GOOMBA_ANI_DIE;
 	}
 	else if (patrolState != WALKING) {
-		ani = PARA_GOOMBA_ANI_WALKING;
+		ani = PARA_GOOMBA_ANI_FLYING;
+	} 
+	else {
+		ani = PARA_GOOMBA_ANI_WING_WALKING;
 	}
 
-	animation_set->at(ani)->Render(x, y);
+
+	if (hasWings) {
+		if (patrolState != WALKING) {
+			animation_set->at(ani)->Render(x, y - 8);
+		}
+		else {
+			animation_set->at(ani)->Render(x, y - 4);
+		}
+	}
+	else
+		animation_set->at(ani)->Render(x, y);
+	RenderBoundingBox();
 }
 
 void CParaGoomba::SetState(int state) {
