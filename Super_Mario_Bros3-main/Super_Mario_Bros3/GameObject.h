@@ -83,6 +83,7 @@ public:
 	void GetSpeed(float& vx, float& vy) { vx = this->vx; vy = this->vy; }
 
 	int GetState() { return this->state; }
+	bool IsStatic() { return this->isStatic; }
 
 	void RenderBoundingBox();
 

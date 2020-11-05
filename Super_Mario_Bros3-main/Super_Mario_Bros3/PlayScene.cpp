@@ -182,6 +182,8 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		float enemyX = atof(tokens[7].c_str());
 		float enemyY = atof(tokens[8].c_str());
 		float enemyAnimSetId = atof(tokens[9].c_str());
+		float enemyPatrolMinX = atof(tokens[10].c_str());
+		float enemyPatrolMaxX = atof(tokens[11].c_str());
 		CEnemySpawner* newSpawner = new CEnemySpawner(x, y, r, b);
 		switch (type) {
 		case OBJECT_TYPE_GOOMBA: 
@@ -189,6 +191,7 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 			LPANIMATION_SET animSet = animation_sets->Get(enemyAnimSetId);
 			newEnemy->SetAnimationSet(animSet);
 			newSpawner->AddEnemy(newEnemy);
+			newEnemy->SetPatrol(enemyPatrolMinX, enemyPatrolMaxX);
 			objects.push_back(newEnemy);
 			break;
 		}
@@ -332,10 +335,11 @@ void CPlayScenceKeyHandler::OnKeyDown(int KeyCode)
 	//DebugOut(L"[INFO] KeyDown: %d\n", KeyCode);
 
 	CMario* mario = ((CPlayScene*)scence)->GetPlayer();
-
 	switch (KeyCode)
 	{
-	case DIK_SPACE:
+	/*case DIK_X:
+		break;*/
+	case DIK_Z:
 		mario->SetState(MARIO_STATE_JUMP);
 		break;
 	case DIK_U:
@@ -371,7 +375,12 @@ void CPlayScenceKeyHandler::KeyState(BYTE* states)
 			mario->SetState(MARIO_STATE_BRAKING_LEFT);
 		}
 		else {
-			mario->SetState(MARIO_STATE_WALKING_RIGHT);
+			if (game->IsKeyDown(DIK_X)) {
+				mario->SetState(MARIO_STATE_RUNNING_RIGHT);
+			}
+			else {
+				mario->SetState(MARIO_STATE_WALKING_RIGHT);
+			}
 		}
 	}
 	else if (game->IsKeyDown(DIK_LEFT))
@@ -380,7 +389,12 @@ void CPlayScenceKeyHandler::KeyState(BYTE* states)
 			mario->SetState(MARIO_STATE_BRAKING_RIGHT);
 		}
 		else {
-			mario->SetState(MARIO_STATE_WALKING_LEFT);
+			if (game->IsKeyDown(DIK_X)) {
+				mario->SetState(MARIO_STATE_RUNNING_LEFT);
+			}
+			else {
+				mario->SetState(MARIO_STATE_WALKING_LEFT);
+			}
 		}
 	}
 	else

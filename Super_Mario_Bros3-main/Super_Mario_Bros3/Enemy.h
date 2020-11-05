@@ -11,10 +11,16 @@ class CEnemy : public CGameObject {
 protected: 
 	float startX;
 	float startY;
+	bool isDeath;
+	float minPatrolX;
+	float maxPatrolX;
 
 public:
 	CEnemy(float x, float y);
 	CEnemy();
+
+	virtual bool IsDeath() { return this->isDeath; }
+	virtual void SetPatrol(float minX, float maxX) { this->minPatrolX = minX; this->maxPatrolX = maxX; }
 
 	virtual void Reset();
 };

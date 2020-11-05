@@ -24,6 +24,7 @@ void CEnemy::Reset() {
 	this->x = startX;
 	this->y = startY;
 	this->collisionState = COLLISION;
+	this->isDeath = false;
 }
 
 
@@ -53,7 +54,10 @@ void CEnemySpawner::GetBoundingBox(float& l, float& t, float& r, float& b)
 }
 
 void CEnemySpawner::SpawnEnemy() {
-	this->enemy->Reset();
+	float enemyX, enemyY;
+	this->enemy->GetPosition(enemyX, enemyY);
+	if (this->enemy->IsDeath() || enemyY > 240.0f)
+		this->enemy->Reset();
 }
 
 void CEnemySpawner::OnTriggerEnter(LPCOLLISIONEVENT trigger) {

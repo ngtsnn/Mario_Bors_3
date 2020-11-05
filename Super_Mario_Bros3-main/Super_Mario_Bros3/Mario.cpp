@@ -24,13 +24,27 @@ CMario::CMario(float x, float y) : CGameObject()
 	this->isGrounded = false;
 	this->isUsingGravity = true;
 	this->isStatic = false;
+	this->runningStack = 0;
+	this->runningStartTime = 0;
 	this->collisionState = COLLISION;
 }
 
 void CMario::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {
+	
 	//Do the collisions
 	CGameObject::Update(dt, coObjects);
+
+	if (state == MARIO_STATE_DIE) {
+		return;
+	}
+
+	if (GetTickCount() - untouchable_start > MARIO_UNTOUCHABLE_TIME)
+	{
+		untouchable_start = 0;
+		untouchable = 0;
+	}
+	
 
 }
 
@@ -85,10 +99,13 @@ void CMario::Render()
 	int ani = -1;
 	if (state == MARIO_STATE_DIE)
 		ani = MARIO_ANI_DIE;
-	else
+	//else if (vy != 0) {
+	//	ani = MARIO_ANI_SMALL_JUMPING_RIGHT;
+	//} //JUMP
+	else {
 		if (level == MARIO_LEVEL_BIG)
 		{
-			if (abs(vx) <= .05f)
+			if (abs(vx) <= .02f)
 			{
 				if (nx > 0)
 					ani = MARIO_ANI_BIG_IDLE_RIGHT;
@@ -101,6 +118,9 @@ void CMario::Render()
 					if (this->state == MARIO_STATE_BRAKING_RIGHT) {
 						ani = MARIO_ANI_BIG_BRAKING_RIGHT;
 					}
+					else if (vx > MARIO_WALKING_SPEED) {
+						ani = MARIO_ANI_BIG_RUNNING_RIGHT;
+					}
 					else {
 						ani = MARIO_ANI_BIG_WALKING_RIGHT;
 					}
@@ -108,6 +128,9 @@ void CMario::Render()
 				else {
 					if (this->state == MARIO_STATE_BRAKING_LEFT) {
 						ani = MARIO_ANI_BIG_BRAKING_LEFT;
+					}
+					else if (vx < -MARIO_WALKING_SPEED) {
+						ani = MARIO_ANI_BIG_RUNNING_LEFT;
 					}
 					else {
 						ani = MARIO_ANI_BIG_WALKING_LEFT;
@@ -117,7 +140,7 @@ void CMario::Render()
 		} // BIG
 		else if (level == MARIO_LEVEL_SMALL)
 		{
-			if (abs(vx) <= .05f)
+			if (abs(vx) <= .02f)
 			{
 				if (nx > 0)
 					ani = MARIO_ANI_SMALL_IDLE_RIGHT;
@@ -126,9 +149,13 @@ void CMario::Render()
 			}
 			else
 			{
+
 				if (vx > 0) {
 					if (this->state == MARIO_STATE_BRAKING_RIGHT) {
 						ani = MARIO_ANI_SMALL_BRAKING_RIGHT;
+					}
+					else if (vx > MARIO_WALKING_SPEED) {
+						ani = MARIO_ANI_SMALL_RUNNING_RIGHT;
 					}
 					else {
 						ani = MARIO_ANI_SMALL_WALKING_RIGHT;
@@ -138,6 +165,9 @@ void CMario::Render()
 					if (this->state == MARIO_STATE_BRAKING_LEFT) {
 						ani = MARIO_ANI_SMALL_BRAKING_LEFT;
 					}
+					else if (vx < -MARIO_WALKING_SPEED) {
+						ani = MARIO_ANI_SMALL_RUNNING_LEFT;
+					}
 					else {
 						ani = MARIO_ANI_SMALL_WALKING_LEFT;
 					}
@@ -146,7 +176,7 @@ void CMario::Render()
 		} //SMALL
 		else if (level == MARIO_LEVEL_TAIL)
 		{
-			if (abs(vx) <= .05f)
+			if (abs(vx) <= .02f)
 			{
 				if (nx > 0)
 					ani = MARIO_ANI_TAIL_IDLE_RIGHT;
@@ -155,9 +185,13 @@ void CMario::Render()
 			}
 			else
 			{
+
 				if (vx > 0) {
 					if (this->state == MARIO_STATE_BRAKING_RIGHT) {
 						ani = MARIO_ANI_TAIL_BRAKING_RIGHT;
+					}
+					else if (vx > MARIO_WALKING_SPEED) {
+						ani = MARIO_ANI_TAIL_RUNNING_RIGHT;
 					}
 					else {
 						ani = MARIO_ANI_TAIL_WALKING_RIGHT;
@@ -167,6 +201,9 @@ void CMario::Render()
 					if (this->state == MARIO_STATE_BRAKING_LEFT) {
 						ani = MARIO_ANI_TAIL_BRAKING_LEFT;
 					}
+					else if (vx < -MARIO_WALKING_SPEED) {
+						ani = MARIO_ANI_TAIL_RUNNING_LEFT;
+					}
 					else {
 						ani = MARIO_ANI_TAIL_WALKING_LEFT;
 					}
@@ -175,7 +212,7 @@ void CMario::Render()
 		} //TAIL
 		else if (level == MARIO_LEVEL_FIRE)
 		{
-			if (abs(vx) <= .05f)
+			if (abs(vx) <= .02f)
 			{
 				if (nx > 0)
 					ani = MARIO_ANI_FIRE_IDLE_RIGHT;
@@ -184,9 +221,13 @@ void CMario::Render()
 			}
 			else
 			{
+
 				if (vx > 0) {
 					if (this->state == MARIO_STATE_BRAKING_RIGHT) {
 						ani = MARIO_ANI_FIRE_BRAKING_RIGHT;
+					}
+					else if (vx > MARIO_WALKING_SPEED) {
+						ani = MARIO_ANI_FIRE_RUNNING_RIGHT;
 					}
 					else {
 						ani = MARIO_ANI_FIRE_WALKING_RIGHT;
@@ -196,12 +237,16 @@ void CMario::Render()
 					if (this->state == MARIO_STATE_BRAKING_LEFT) {
 						ani = MARIO_ANI_FIRE_BRAKING_LEFT;
 					}
+					else if (vx < -MARIO_WALKING_SPEED) {
+						ani = MARIO_ANI_FIRE_RUNNING_LEFT;
+					}
 					else {
 						ani = MARIO_ANI_FIRE_WALKING_LEFT;
 					}
 				}
 			}
 		} //FIRE
+	} //MOVING
 
 	int alpha = 255;
 	if (untouchable) alpha = 128;
@@ -226,17 +271,32 @@ void CMario::SetState(int state)
 	switch (state)
 	{
 	case MARIO_STATE_BRAKING_LEFT:
-		this->vx += (MARIO_ACCELERATION * dt * .09f);
+		this->vx += (MARIO_ACCELERATION * dt * .2f);
+		this->runningStack = 0;
 		break;
 	case MARIO_STATE_WALKING_RIGHT:
 		//move faster in time
-		this->vx += (MARIO_ACCELERATION * dt * .3f);	
+		this->vx += (MARIO_ACCELERATION * dt * .4f);	
 		//clamp the velocity
 		this->vx = this->Clamp(this->vx, -MARIO_WALKING_SPEED, MARIO_WALKING_SPEED);
 		nx = 1;
+		this->runningStack = 0;
+		break;
+	case MARIO_STATE_RUNNING_RIGHT:
+		//move faster in time
+		this->vx += (MARIO_ACCELERATION * dt);
+		//clamp the velocity
+		this->vx = this->Clamp(this->vx, -MARIO_RUNNING_SPEED, MARIO_RUNNING_SPEED);
+		nx = 1;
+		if (GetTickCount() - this->runningStartTime >= MARIO_RUNNING_STACK_TIME) {
+			this->runningStack++;
+			this->runningStartTime = GetTickCount();
+		}
 		break;
 	case MARIO_STATE_BRAKING_RIGHT:
-		this->vx += (-MARIO_ACCELERATION * dt * .3f);
+		this->vx += (-MARIO_ACCELERATION * dt * .5f);
+		this->runningStack = 0;
+		this->runningStartTime = 0;
 		break;
 	case MARIO_STATE_WALKING_LEFT:
 		//move faster in time
@@ -244,18 +304,35 @@ void CMario::SetState(int state)
 		//clamp the velocity
 		this->vx = this->Clamp(this->vx, -MARIO_WALKING_SPEED, MARIO_WALKING_SPEED);
 		nx = -1;
+		this->runningStack = 0;
+		break;
+	case MARIO_STATE_RUNNING_LEFT:
+		//move faster in time
+		this->vx += (-MARIO_ACCELERATION * dt);
+		//clamp the velocity
+		this->vx = this->Clamp(this->vx, -MARIO_RUNNING_SPEED, MARIO_RUNNING_SPEED);
+		nx = -1;
+		break;
+		if (GetTickCount() - this->runningStartTime >= MARIO_RUNNING_STACK_TIME) {
+			this->runningStack++;
+			this->runningStartTime = GetTickCount();
+		}
 		break;
 	case MARIO_STATE_JUMP:
 		//if (this->vy <= 0.03f && this->vy > -0.03f)
 		//if (this->isGrounded == 1)
+		this->runningStack = 0;
 		vy = -MARIO_JUMP_SPEED_Y;
 		break;
 	case MARIO_STATE_IDLE:
-		this->vx -= this->vx * MARIO_MUY_FRICTION * dt;
+		this->vx -= this->vx * MARIO_MUY_FRICTION * dt * 1.2f;
+		this->runningStack = 0;
 		break;
 	case MARIO_STATE_DIE:
 		vy = -MARIO_DIE_DEFLECT_SPEED;
-		this->collisionState = TRIGGER;
+		this->runningStack = 0;
+		this->runningStartTime = 0;
+		this->collisionState = NONE;
 		break;
 	}
 }
@@ -296,6 +373,8 @@ void CMario::Reset()
 	this->nx = 1;
 	SetSpeed(0, 0);
 	this->isGrounded = false;
+	this->runningStack = 0;
+	this->runningStartTime = 0;
 	this->isUsingGravity = true;
 	this->isStatic = false;
 	this->collisionState = COLLISION;

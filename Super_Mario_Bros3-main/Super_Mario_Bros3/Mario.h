@@ -1,13 +1,22 @@
 #pragma once
 #include "GameObject.h"
+#include "Koopas.h"
 
-#define MARIO_WALKING_SPEED		0.15f 
-//0.1f
+#define MARIO_WALKING_SPEED			0.15f 
+#define MARIO_RUNNING_SPEED			0.2f
+#define MARIO_FLYING_ACCELERATION	0.003f
 #define MARIO_JUMP_SPEED_Y			0.5f
 #define MARIO_JUMP_DEFLECT_SPEED	0.2f
 #define MARIO_DIE_DEFLECT_SPEED		0.5f
-#define MARIO_ACCELERATION			0.002f
-#define MARIO_MUY_FRICTION			0.002f
+#define MARIO_ACCELERATION			0.0007f
+#define MARIO_MUY_FRICTION			0.001f
+
+#define MARIO_RUNNING_STACK			6
+#define MARIO_RUNNING_STACK_TIME	100
+#define MARIO_FLYING_TIME			3500
+#define MARIO_UNTOUCHABLE_TIME		3000
+#define MARIO_TAILING_TIME			400
+#define MARIO_KICKING_TIME			400
 
 #define MARIO_STATE_IDLE			0
 #define MARIO_STATE_WALKING_RIGHT	100
@@ -86,6 +95,8 @@
 #define MARIO_ANI_TAIL_RUNNING_LEFT		55
 #define MARIO_ANI_TAIL_SITDOWN_RIGHT	56
 #define MARIO_ANI_TAIL_SITDOWN_LEFT		57
+#define MARIO_ANI_TAIL_TAILING_RIGHT	58	
+#define MARIO_ANI_TAIL_TAILING_LEFT		59
 
 
 #define MARIO_ANI_FIRE_IDLE_RIGHT		60
@@ -126,7 +137,7 @@
 #define MARIO_FIRE_BBOX_WIDTH  14
 #define MARIO_FIRE_BBOX_HEIGHT 27
 
-#define MARIO_UNTOUCHABLE_TIME 5000
+
 
 
 class CMario : public CGameObject
@@ -135,8 +146,21 @@ class CMario : public CGameObject
 	int untouchable;
 	DWORD untouchable_start;
 
+	int runningStack;
+	DWORD runningStartTime;
+
+	bool isKicking = 0;
+	DWORD kickingStartTime;
+
+	bool isHolding = 0;
+	
+	bool isTailing = 0;
+	DWORD TailingStartTime;
+
 	float start_x;			// initial position of Mario at scene
 	float start_y;
+
+	CKoopas* koopas = NULL;
 
 	bool isGrounded;
 
@@ -154,7 +178,13 @@ public:
 	void StartUntouchable() { untouchable = 1; untouchable_start = GetTickCount(); }
 
 	bool IsGrounded() { return this->isGrounded; }
+	bool CanFly() { return this->runningStack > MARIO_RUNNING_STACK && this->level == MARIO_LEVEL_TAIL; }
+	bool IsHolding() { return this->isHolding; }
+	bool IsKicking() { return this->isKicking; }
+	bool IsTailing() { return this->isTailing; }
 
+
+	int GetLevel() { return this->level; }
 
 	void Reset();
 
