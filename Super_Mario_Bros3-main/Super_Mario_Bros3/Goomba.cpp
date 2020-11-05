@@ -134,35 +134,43 @@ void CParaGoomba::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects) {
 	//get collision
 	CGameObject::Update(dt, coObjects);
 
-	//change patrol state
-	if (patrolState == SHORT_JUMP) {
-		if (GetTickCount() - statePatrolTimeStart > PARA_GOOMBA_SHORT_JUMP_TIME) {
-			if (this->shortJumpStack > 0) {
-				this->shortJumpStack--;
+	//lose wing => para goomba can not jump anymore
+	if (!hasWings) {
+		this->patrolState = WALKING;
+	}
+	else {
+		//change patrol state
+		if (patrolState == SHORT_JUMP) {
+			if (GetTickCount() - statePatrolTimeStart > PARA_GOOMBA_SHORT_JUMP_TIME) {
+				if (this->shortJumpStack > 0) {
+					this->shortJumpStack--;
+					this->vy = -PARA_GOOMBA_SHORT_JUMP_SPEED;
+					statePatrolTimeStart = GetTickCount();
+				}
+				else {
+					this->patrolState = HIGH_JUMP;
+					this->vy = -PARA_GOOMBA_HIGH_JUMP_SPEED;
+					this->shortJumpStack = PARA_GOOMBA_SHORT_JUMP_STACK;
+					statePatrolTimeStart = GetTickCount();
+				}
+			}
+		}
+		else if (patrolState == HIGH_JUMP) {
+			if (GetTickCount() - statePatrolTimeStart > PARA_GOOMBA_HIGH_JUMP_TIME) {
+				this->patrolState = WALKING;
+				statePatrolTimeStart = GetTickCount();
+			}
+		}
+		else {
+			if (GetTickCount() - statePatrolTimeStart > PARA_GOOMBA_WALKING_TIME) {
+				this->patrolState = SHORT_JUMP;
 				this->vy = -PARA_GOOMBA_SHORT_JUMP_SPEED;
 				statePatrolTimeStart = GetTickCount();
 			}
-			else {
-				this->patrolState = HIGH_JUMP;
-				this->vy = -PARA_GOOMBA_HIGH_JUMP_SPEED;
-				this->shortJumpStack = PARA_GOOMBA_SHORT_JUMP_STACK;
-				statePatrolTimeStart = GetTickCount();
-			}
 		}
 	}
-	else if (patrolState == HIGH_JUMP) {
-		if (GetTickCount() - statePatrolTimeStart > PARA_GOOMBA_HIGH_JUMP_TIME) {
-			this->patrolState = WALKING;
-			statePatrolTimeStart = GetTickCount();
-		}
-	}
-	else {
-		if (GetTickCount() - statePatrolTimeStart > PARA_GOOMBA_WALKING_TIME) {
-			this->patrolState = SHORT_JUMP;
-			this->vy = -PARA_GOOMBA_SHORT_JUMP_SPEED;
-			statePatrolTimeStart = GetTickCount();
-		}
-	}
+
+	
 
 	switch (this->state) {
 	case GOOMBA_STATE_DIE:
@@ -195,7 +203,7 @@ void CParaGoomba::Render() {
 	else if (patrolState != WALKING) {
 		ani = PARA_GOOMBA_ANI_FLYING;
 	} 
-	else {
+	else if (patrolState == WALKING && hasWings) {
 		ani = PARA_GOOMBA_ANI_WING_WALKING;
 	}
 
@@ -210,7 +218,7 @@ void CParaGoomba::Render() {
 	}
 	else
 		animation_set->at(ani)->Render(x, y);
-	RenderBoundingBox();
+	//RenderBoundingBox();
 }
 
 void CParaGoomba::SetState(int state) {

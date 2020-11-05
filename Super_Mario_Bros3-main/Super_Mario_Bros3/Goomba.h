@@ -10,6 +10,7 @@
 #define PARA_GOOMBA_SHORT_JUMP_STACK	3
 #define PARA_GOOMBA_SHORT_JUMP_SPEED	0.2f
 #define PARA_GOOMBA_HIGH_JUMP_SPEED		0.4f
+#define GOOMBA_DIE_DEFLECT_SPEED		0.5f
 
 #define GOOMBA_NORMAL_BBOX_WIDTH				16
 #define GOOMBA_NORMAL_BBOX_HEIGHT				15
@@ -66,6 +67,8 @@ public:
 	CParaGoomba(float x, float y);
 	CParaGoomba();
 	virtual void SetState(int state);
+	virtual void LoseWings() { this->hasWings = false; this->y -= 10.0f; }
+	virtual bool HasWings() { return this->hasWings; }
 	virtual void OnCollisionEnter(LPCOLLISIONEVENT collision);
 	virtual void OnTriggerEnter(LPCOLLISIONEVENT trigger);
 	virtual void Reset();

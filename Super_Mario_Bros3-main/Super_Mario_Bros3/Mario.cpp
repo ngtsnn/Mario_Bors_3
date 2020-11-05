@@ -70,17 +70,42 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 
 void CMario::OnCollisionEnter(LPCOLLISIONEVENT collisionEvent) {
 	LPCOLLISIONEVENT e = collisionEvent;
-	if (dynamic_cast<CGoomba*>(e->obj)) // if e->obj is Goomba 
+
+	if (dynamic_cast<CParaGoomba*>(e->obj)) // if e->obj is Goomba 
+	{
+		CParaGoomba* goomba = dynamic_cast<CParaGoomba*>(e->obj);
+
+		//kill by tail (mario face the enemy can kill)
+		if (this->isTailing && e->ny <= 0 && e->nx * this->nx < 0 && abs((long)(GetTickCount() - tailingStartTime - MARIO_TAILING_TIME / 2)) <= 60) {
+			goomba->SetState(GOOMBA_STATE_DIE);
+			goomba->SetSpeed(this->nx * GOOMBA_WALKING_SPEED, -GOOMBA_DIE_DEFLECT_SPEED);
+		}
+
+		// jump on top >> kill Goomba and deflect a bit 
+		else if (e->ny < 0)
+		{
+			if (goomba->HasWings())
+			{
+				goomba->LoseWings();
+				vy = -MARIO_JUMP_DEFLECT_SPEED * 2;
+				this->vx = this->nx * 0.15f;
+			}
+			else {
+				goomba->SetState(GOOMBA_STATE_DIE);
+				vy = -MARIO_JUMP_DEFLECT_SPEED;
+			}
+		}
+	}
+
+	//normal goomba
+	else if (dynamic_cast<CGoomba*>(e->obj)) // if e->obj is Goomba 
 	{
 		CGoomba* goomba = dynamic_cast<CGoomba*>(e->obj);
 
 		//kill by tail (mario face the enemy can kill)
-		if (this->isTailing && e->ny <= 0 && e->nx * this->nx < 0 ) {
-			if (abs((long)(GetTickCount() - tailingStartTime - MARIO_TAILING_TIME / 2)) <= 60)
-			{
-				goomba->SetState(GOOMBA_STATE_DIE);
-				goomba->SetSpeed(this->nx * GOOMBA_WALKING_SPEED, -MARIO_DIE_DEFLECT_SPEED);
-			}
+		if (this->isTailing && e->ny <= 0 && e->nx * this->nx < 0 && abs((long)(GetTickCount() - tailingStartTime - MARIO_TAILING_TIME / 2)) <= 60) {
+			goomba->SetState(GOOMBA_STATE_DIE);
+			goomba->SetSpeed(this->nx * GOOMBA_WALKING_SPEED, -GOOMBA_DIE_DEFLECT_SPEED);
 		}
 
 		// jump on top >> kill Goomba and deflect a bit 
@@ -92,11 +117,16 @@ void CMario::OnCollisionEnter(LPCOLLISIONEVENT collisionEvent) {
 				vy = -MARIO_JUMP_DEFLECT_SPEED;
 			}
 		}
-		else if (e->nx != 0)
+	} // if Goomba
+
+	//enemy
+	if (dynamic_cast<LPENEMY>(e->obj)) {
+		LPENEMY enemy = dynamic_cast<LPENEMY>(e->obj);
+		if (e->nx != 0)
 		{
 			if (untouchable == 0)
 			{
-				if (goomba->GetState() != GOOMBA_STATE_DIE)
+				if (enemy->GetState() != GOOMBA_STATE_DIE)
 				{
 					if (level > MARIO_LEVEL_SMALL)
 					{
@@ -108,7 +138,8 @@ void CMario::OnCollisionEnter(LPCOLLISIONEVENT collisionEvent) {
 				}
 			}
 		}
-	} // if Goomba
+	}
+
 	else if (dynamic_cast<CPortal*>(e->obj))
 	{
 		CPortal* p = dynamic_cast<CPortal*>(e->obj);
