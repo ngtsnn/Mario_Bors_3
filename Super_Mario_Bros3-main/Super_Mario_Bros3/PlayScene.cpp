@@ -186,7 +186,7 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		float enemyPatrolMaxX = atof(tokens[11].c_str());
 		CEnemySpawner* newSpawner = new CEnemySpawner(x, y, r, b);
 		switch (type) {
-		case OBJECT_TYPE_GOOMBA: 
+		case OBJECT_TYPE_GOOMBA: {
 			LPENEMY newEnemy = new CGoomba(enemyX, enemyY);
 			LPANIMATION_SET animSet = animation_sets->Get(enemyAnimSetId);
 			newEnemy->SetAnimationSet(animSet);
@@ -195,6 +195,16 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 			objects.push_back(newEnemy);
 			break;
 		}
+		case OBJECT_TYPE_PARA_GOOMBA: {
+			LPENEMY newEnemy = new CParaGoomba(enemyX, enemyY);
+			LPANIMATION_SET animSet = animation_sets->Get(enemyAnimSetId);
+			newEnemy->SetAnimationSet(animSet);
+			newSpawner->AddEnemy(newEnemy);
+			newEnemy->SetPatrol(enemyPatrolMinX, enemyPatrolMaxX);
+			objects.push_back(newEnemy);
+			break;
+		}
+		}//end switch
 		obj = newSpawner;
 		break;
 	}

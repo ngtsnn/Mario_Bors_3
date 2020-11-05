@@ -74,8 +74,17 @@ void CMario::OnCollisionEnter(LPCOLLISIONEVENT collisionEvent) {
 	{
 		CGoomba* goomba = dynamic_cast<CGoomba*>(e->obj);
 
+		//kill by tail (mario face the enemy can kill)
+		if (this->isTailing && e->ny <= 0 && e->nx * this->nx < 0 ) {
+			if (abs((long)(GetTickCount() - tailingStartTime - MARIO_TAILING_TIME / 2)) <= 60)
+			{
+				goomba->SetState(GOOMBA_STATE_DIE);
+				goomba->SetSpeed(this->nx * GOOMBA_WALKING_SPEED, -MARIO_DIE_DEFLECT_SPEED);
+			}
+		}
+
 		// jump on top >> kill Goomba and deflect a bit 
-		if (e->ny < 0)
+		else if (e->ny < 0)
 		{
 			if (goomba->GetState() != GOOMBA_STATE_DIE)
 			{

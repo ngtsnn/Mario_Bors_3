@@ -11,11 +11,11 @@ CGoomba::CGoomba(float x, float y)
 	this->isUsingGravity = true;
 	this->collisionState = COLLISION;
 	this->isStatic = false;
-	SetState(GOOMBA_STATE_WALKING);
+	SetState(GOOMBA_STATE_PATROLING);
 }
 
 CGoomba::CGoomba() {
-	SetState(GOOMBA_STATE_WALKING);
+	SetState(GOOMBA_STATE_PATROLING);
 	this->nx = -1;
 	this->isDeath = false;
 }
@@ -36,36 +36,35 @@ void CGoomba::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {
 	CGameObject::Update(dt, coObjects);
 
-	//
-	// TO-DO: make sure Goomba can interact with the world and to each of them too!
-	// 
-
 	// Enemy AI in here
 	switch (this->state)
 	{
 	case GOOMBA_STATE_DIE:
-		y += GOOMBA_NORMAL_BBOX_HEIGHT - GOOMBA_BBOX_HEIGHT_DIE + 1;
+		//y += GOOMBA_NORMAL_BBOX_HEIGHT - GOOMBA_BBOX_HEIGHT_DIE + 1;
 		this->isDeath = true;
-		vx = 0;
-		vy = 0;
 		this->collisionState = NONE;
 		break;
-	case GOOMBA_STATE_WALKING:
-		if (this->vx == 0) {
-			this->vx = -GOOMBA_WALKING_SPEED;
-		}
+	case GOOMBA_STATE_PATROLING:
 		if (this->x > this->maxPatrolX) {
 			this->vx = -GOOMBA_WALKING_SPEED;
+			this->nx = -1;
 		}
 		else if (this->x < this->minPatrolX) {
 			this->vx = GOOMBA_WALKING_SPEED;
+			this->nx = 1;
+		}
+		else {
+			this->vx = GOOMBA_WALKING_SPEED * this->nx;
 		}
 		break;
 	}
 }
 
 void CGoomba::OnCollisionEnter(LPCOLLISIONEVENT collision) {
-	
+	/*if (collision->nx != 0 && collision->ny == 0)
+	{
+		this->vx = -vx;
+	}*/
 }
 
 void CGoomba::OnTriggerEnter(LPCOLLISIONEVENT collision) {
@@ -92,6 +91,137 @@ void CGoomba::SetState(int state)
 
 void CGoomba::Reset() {
 	CEnemy::Reset();
-	this->state = GOOMBA_STATE_WALKING;
+	this->state = GOOMBA_STATE_PATROLING;
+}
+
+
+
+//# PARA-GOOMBA HERE
+CParaGoomba::CParaGoomba() {
+	this->hasWings = true;
+	this->shortJumpStack = PARA_GOOMBA_SHORT_JUMP_STACK;
+	this->patrolState = SHORT_JUMP;
+}
+
+CParaGoomba::CParaGoomba(float x, float y) {
+	this->startX = x;
+	this->startY = y;
+	this->x = x;
+	this->y = y;
+	this->isDeath = false;
+	this->isUsingGravity = true;
+	this->collisionState = COLLISION;
+	this->isStatic = false;
+	SetState(GOOMBA_STATE_PATROLING);
+	this->hasWings = true;
+	this->shortJumpStack = PARA_GOOMBA_SHORT_JUMP_STACK;
+	this->patrolState = SHORT_JUMP;
+	this->statePatrolTimeStart = 0;
+}
+
+void CParaGoomba::GetBoundingBox(float& left, float& top, float& right, float& bottom){
+	left = x;
+	top = y;
+	right = x + PARA_GOOMBA_BBOX_WIDTH;
+
+	if (state == GOOMBA_STATE_DIE)
+		bottom = y + GOOMBA_BBOX_HEIGHT_DIE;
+	else
+		bottom = y + PARA_GOOMBA_BBOX_HEIGHT;
+}
+
+void CParaGoomba::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects) {
+	//get collision
+	CGameObject::Update(dt, coObjects);
+
+	//change patrol state
+	if (patrolState == SHORT_JUMP) {
+		if (GetTickCount() - statePatrolTimeStart > PARA_GOOMBA_SHORT_JUMP_TIME) {
+			if (this->shortJumpStack > 0) {
+				this->shortJumpStack--;
+				this->vy = -PARA_GOOMBA_SHORT_JUMP_SPEED;
+				statePatrolTimeStart = GetTickCount();
+			}
+			else {
+				this->patrolState = HIGH_JUMP;
+				this->vy = -PARA_GOOMBA_HIGH_JUMP_SPEED;
+				this->shortJumpStack = PARA_GOOMBA_SHORT_JUMP_STACK;
+				statePatrolTimeStart = GetTickCount();
+			}
+		}
+	}
+	else if (patrolState == HIGH_JUMP) {
+		if (GetTickCount() - statePatrolTimeStart > PARA_GOOMBA_HIGH_JUMP_TIME) {
+			this->patrolState = WALKING;
+			statePatrolTimeStart = GetTickCount();
+		}
+	}
+	else {
+		if (GetTickCount() - statePatrolTimeStart > PARA_GOOMBA_WALKING_TIME) {
+			this->patrolState = SHORT_JUMP;
+			this->vy = -PARA_GOOMBA_SHORT_JUMP_SPEED;
+			statePatrolTimeStart = GetTickCount();
+		}
+	}
+
+	switch (this->state) {
+	case GOOMBA_STATE_DIE:
+		//y += GOOMBA_NORMAL_BBOX_HEIGHT - GOOMBA_BBOX_HEIGHT_DIE + 1;
+		this->isDeath = true;
+		this->collisionState = NONE;
+		break;
+	case GOOMBA_STATE_PATROLING:
+		if (this->x > this->maxPatrolX) {
+			this->vx = -GOOMBA_WALKING_SPEED;
+			this->nx = -1;
+		}
+		else if (this->x < this->minPatrolX) {
+			this->vx = GOOMBA_WALKING_SPEED;
+			this->nx = 1;
+		}
+		else {
+			this->vx = GOOMBA_WALKING_SPEED * this->nx;
+		}
+		break; 
+	}
+
+}
+
+void CParaGoomba::Render() {
+	int ani = PARA_GOOMBA_ANI_NO_WING;
+	if (isDeath) {
+		ani = PARA_GOOMBA_ANI_DIE;
+	}
+	else if (patrolState != WALKING) {
+		ani = PARA_GOOMBA_ANI_WALKING;
+	}
+
+	animation_set->at(ani)->Render(x, y);
+}
+
+void CParaGoomba::SetState(int state) {
+	CGameObject::SetState(state);
+}
+
+void CParaGoomba::OnCollisionEnter(LPCOLLISIONEVENT collision) {
+
+}
+
+void CParaGoomba::OnTriggerEnter(LPCOLLISIONEVENT trigger) {
+
+}
+
+void CParaGoomba::Reset() {
+	this->x = startX;
+	this->y = startY;
+	this->isDeath = false;
+	this->isUsingGravity = true;
+	this->collisionState = COLLISION;
+	this->isStatic = false;
+	SetState(GOOMBA_STATE_PATROLING);
+	this->hasWings = true;
+	this->shortJumpStack = PARA_GOOMBA_SHORT_JUMP_STACK;
+	this->patrolState = SHORT_JUMP;
+	this->statePatrolTimeStart = 0;
 }
 
