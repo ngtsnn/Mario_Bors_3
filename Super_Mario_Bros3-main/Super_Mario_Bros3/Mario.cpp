@@ -119,6 +119,30 @@ void CMario::OnCollisionEnter(LPCOLLISIONEVENT collisionEvent) {
 		}
 	} // if Goomba
 
+	//Koopas
+	else if (dynamic_cast<CKoopas*>(e->obj)) {
+		CKoopas* koopas = dynamic_cast<CKoopas*>(e->obj);
+		//kill by tail (mario face the enemy can kill)
+		if (this->isTailing && e->ny <= 0 && e->nx * this->nx < 0 && abs((long)(GetTickCount() - tailingStartTime - MARIO_TAILING_TIME / 2)) <= 60) {
+			if (koopas->HasWings()) {
+				koopas->LoseWings();
+			}
+			koopas->ShellUp();
+			koopas->SetSpeed(this->nx * GOOMBA_WALKING_SPEED, -GOOMBA_DIE_DEFLECT_SPEED);
+		}
+		else if (e->ny < 0) {
+			if (koopas->HasWings()) {
+				koopas->LoseWings();
+			}
+			else {
+				koopas->ShellDown();
+			}
+		}
+		if (koopas->IsShelling()) {
+			
+		}
+	}
+
 	//enemy
 	if (dynamic_cast<LPENEMY>(e->obj)) {
 		LPENEMY enemy = dynamic_cast<LPENEMY>(e->obj);

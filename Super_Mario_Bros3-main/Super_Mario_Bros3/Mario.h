@@ -153,6 +153,8 @@ class CMario : public CGameObject
 	DWORD kickingStartTime;
 
 	bool isHolding = 0;
+	bool canHold;
+
 	
 	bool isTailing = 0;
 	DWORD tailingStartTime;

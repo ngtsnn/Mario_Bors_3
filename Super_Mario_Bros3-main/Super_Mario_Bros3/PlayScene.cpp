@@ -34,7 +34,9 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath) :
 #define OBJECT_TYPE_BRICK				1
 #define OBJECT_TYPE_GOOMBA				20
 #define OBJECT_TYPE_PARA_GOOMBA			21
-#define OBJECT_TYPE_KOOPAS				3
+#define OBJECT_TYPE_GREEN_KOOPAS		30
+#define OBJECT_TYPE_FLY_KOOPAS			301
+#define OBJECT_TYPE_RED_KOOPAS			31
 #define OBJECT_TYPE_NOCOLOBJ			4
 #define OBJECT_TYPE_RECT				5
 #define OBJECT_TYPE_PIPE				6
@@ -163,7 +165,7 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		break;
 	//case OBJECT_TYPE_GOOMBA: obj = new CGoomba(x, y); break;
 	case OBJECT_TYPE_BRICK: obj = new CBrick(); break;
-	case OBJECT_TYPE_KOOPAS: obj = new CKoopas(); break;
+	//case OBJECT_TYPE_KOOPAS: obj = new CKoopas(); break;
 	case OBJECT_TYPE_PORTAL:
 	{
 		float r = atof(tokens[4].c_str());
@@ -197,6 +199,33 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		}
 		case OBJECT_TYPE_PARA_GOOMBA: {
 			LPENEMY newEnemy = new CParaGoomba(enemyX, enemyY);
+			LPANIMATION_SET animSet = animation_sets->Get(enemyAnimSetId);
+			newEnemy->SetAnimationSet(animSet);
+			newSpawner->AddEnemy(newEnemy);
+			newEnemy->SetPatrol(enemyPatrolMinX, enemyPatrolMaxX);
+			objects.push_back(newEnemy);
+			break;
+		}
+		case OBJECT_TYPE_GREEN_KOOPAS: {
+			LPENEMY newEnemy = new CKoopas(enemyX, enemyY, KOOPAS_COLOR_GREEN, false);
+			LPANIMATION_SET animSet = animation_sets->Get(enemyAnimSetId);
+			newEnemy->SetAnimationSet(animSet);
+			newSpawner->AddEnemy(newEnemy);
+			newEnemy->SetPatrol(enemyPatrolMinX, enemyPatrolMaxX);
+			objects.push_back(newEnemy);
+			break;
+		}
+		case OBJECT_TYPE_RED_KOOPAS: {
+			LPENEMY newEnemy = new CKoopas(enemyX, enemyY, KOOPAS_COLOR_RED, false);
+			LPANIMATION_SET animSet = animation_sets->Get(enemyAnimSetId);
+			newEnemy->SetAnimationSet(animSet);
+			newSpawner->AddEnemy(newEnemy);
+			newEnemy->SetPatrol(enemyPatrolMinX, enemyPatrolMaxX);
+			objects.push_back(newEnemy);
+			break;
+		}
+		case OBJECT_TYPE_FLY_KOOPAS: {
+			LPENEMY newEnemy = new CKoopas(enemyX, enemyY, KOOPAS_COLOR_GREEN, true);
 			LPANIMATION_SET animSet = animation_sets->Get(enemyAnimSetId);
 			newEnemy->SetAnimationSet(animSet);
 			newSpawner->AddEnemy(newEnemy);

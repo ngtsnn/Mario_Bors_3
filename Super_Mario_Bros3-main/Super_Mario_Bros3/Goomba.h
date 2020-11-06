@@ -44,12 +44,6 @@ public:
 	virtual void Reset();
 };
 
-enum PATROL_STATE {
-	SHORT_JUMP = 1,
-	HIGH_JUMP = 2,
-	WALKING = 0
-};
-
 class CParaGoomba : public CGoomba {
 protected:
 	bool hasWings;

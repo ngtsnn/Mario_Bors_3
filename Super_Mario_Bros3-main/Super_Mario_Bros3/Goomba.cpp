@@ -10,8 +10,10 @@ CGoomba::CGoomba(float x, float y)
 	this->isDeath = false;
 	this->isUsingGravity = true;
 	this->collisionState = COLLISION;
-	this->isStatic = false;
+	this->isStatic = false;	
+	this->nx = -1;
 	SetState(GOOMBA_STATE_PATROLING);
+
 }
 
 CGoomba::CGoomba() {
@@ -61,10 +63,11 @@ void CGoomba::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 }
 
 void CGoomba::OnCollisionEnter(LPCOLLISIONEVENT collision) {
-	/*if (collision->nx != 0 && collision->ny == 0)
-	{
-		this->vx = -vx;
-	}*/
+	if (dynamic_cast<LPENEMY>(collision->obj)) {
+		if (collision->ny > 0) {
+			this->y -= 10;
+		}
+	}
 }
 
 void CGoomba::OnTriggerEnter(LPCOLLISIONEVENT collision) {
@@ -92,6 +95,7 @@ void CGoomba::SetState(int state)
 void CGoomba::Reset() {
 	CEnemy::Reset();
 	this->state = GOOMBA_STATE_PATROLING;
+	this->nx = -1;
 }
 
 
@@ -117,6 +121,7 @@ CParaGoomba::CParaGoomba(float x, float y) {
 	this->shortJumpStack = PARA_GOOMBA_SHORT_JUMP_STACK;
 	this->patrolState = SHORT_JUMP;
 	this->statePatrolTimeStart = 0;
+	this->nx = -1;
 }
 
 void CParaGoomba::GetBoundingBox(float& left, float& top, float& right, float& bottom){
@@ -207,13 +212,13 @@ void CParaGoomba::Render() {
 		ani = PARA_GOOMBA_ANI_WING_WALKING;
 	}
 
-
+	//if goomba has wings, just draw askew a little bit because we don't care wing collision
 	if (hasWings) {
 		if (patrolState != WALKING) {
-			animation_set->at(ani)->Render(x, y - 8);
+			animation_set->at(ani)->Render(x - 2, y - 8);
 		}
 		else {
-			animation_set->at(ani)->Render(x, y - 4);
+			animation_set->at(ani)->Render(x - 2, y - 4);
 		}
 	}
 	else
@@ -226,7 +231,11 @@ void CParaGoomba::SetState(int state) {
 }
 
 void CParaGoomba::OnCollisionEnter(LPCOLLISIONEVENT collision) {
-
+	if (dynamic_cast<LPENEMY>(collision->obj)) {
+		if (collision->ny > 0) {
+			this->y -= 10;
+		}
+	}
 }
 
 void CParaGoomba::OnTriggerEnter(LPCOLLISIONEVENT trigger) {
@@ -234,13 +243,9 @@ void CParaGoomba::OnTriggerEnter(LPCOLLISIONEVENT trigger) {
 }
 
 void CParaGoomba::Reset() {
-	this->x = startX;
-	this->y = startY;
-	this->isDeath = false;
-	this->isUsingGravity = true;
-	this->collisionState = COLLISION;
-	this->isStatic = false;
-	SetState(GOOMBA_STATE_PATROLING);
+	CEnemy::Reset();
+	this->state = GOOMBA_STATE_PATROLING;
+	this->nx = -1;
 	this->hasWings = true;
 	this->shortJumpStack = PARA_GOOMBA_SHORT_JUMP_STACK;
 	this->patrolState = SHORT_JUMP;

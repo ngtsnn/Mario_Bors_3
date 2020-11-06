@@ -7,6 +7,12 @@
 #define ENEMY_TYPE_PARA_GOOMBA	21
 #define ENEMY_TYPE_KOOPAS		3
 
+enum PATROL_STATE {
+	SHORT_JUMP = 1,
+	HIGH_JUMP = 2,
+	WALKING = 0
+};
+
 class CEnemy : public CGameObject {
 protected: 
 	float startX;
