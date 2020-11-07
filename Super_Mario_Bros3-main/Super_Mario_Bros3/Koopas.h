@@ -8,10 +8,11 @@
 
 #define KOOPAS_WALKING_SPEED		0.04f
 #define KOOPAS_SHELLING_TIME		6000
-#define KOOPAS_KICKED_SPEED			0.1f
+#define KOOPAS_KICKED_SPEED			0.3f
 #define KOOPAS_KICKED_STACK			4
 #define KOOPAS_JUMPING_TIME			1000
 #define KOOPAS_JUMPING_SPEED		0.45f
+#define KOOPAS_DIE_DEFLECT_SPEED	0.5f
 
 #define KOOPAS_BBOX_WIDTH			16
 #define KOOPAS_BBOX_HEIGHT			26
@@ -45,6 +46,7 @@ protected:
 	bool isShelling;
 	bool isShellUp;
 	bool isKicked;
+	int kickedCollisionStack;
 	bool isBeingHeld;
 	bool hasWings;
 	PATROL_STATE patrolState;
@@ -64,9 +66,11 @@ public:
 
 	virtual bool IsPara() { return this->isPara; }
 	virtual bool IsShelling() { return this->isShelling; }
+	virtual bool HasWings() { return this->hasWings; }
+	virtual int GetColor() { return this->color; }
+
 	virtual void ShellDown();
 	virtual void ShellUp();
 	virtual void LoseWings();
-	virtual bool HasWings() { return this->hasWings; }
-	virtual int GetColor() { return this->color; }
+	virtual void BeKicked(int dir);
 };

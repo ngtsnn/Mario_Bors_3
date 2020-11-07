@@ -56,6 +56,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 	{
 		kickingStartTime = 0;
 		isKicking = false;
+		SetState(MARIO_STATE_IDLE);
 	}
 
 	//reset tailing
@@ -78,7 +79,8 @@ void CMario::OnCollisionEnter(LPCOLLISIONEVENT collisionEvent) {
 		//kill by tail (mario face the enemy can kill)
 		if (this->isTailing && e->ny <= 0 && e->nx * this->nx < 0 && abs((long)(GetTickCount() - tailingStartTime - MARIO_TAILING_TIME / 2)) <= 60) {
 			goomba->SetState(GOOMBA_STATE_DIE);
-			goomba->SetSpeed(this->nx * GOOMBA_WALKING_SPEED, -GOOMBA_DIE_DEFLECT_SPEED);
+			goomba->SetSpeed(this->nx * GOOMBA_WALKING_SPEED * 2, -GOOMBA_DIE_DEFLECT_SPEED);
+			return;
 		}
 
 		// jump on top >> kill Goomba and deflect a bit 
@@ -95,6 +97,20 @@ void CMario::OnCollisionEnter(LPCOLLISIONEVENT collisionEvent) {
 				vy = -MARIO_JUMP_DEFLECT_SPEED;
 			}
 		}
+
+		else if (e->nx != 0)
+		{
+			if (untouchable == 0)
+			{
+				if (level > MARIO_LEVEL_SMALL)
+				{
+					this->level--;
+					StartUntouchable();
+				}
+				else
+					SetState(MARIO_STATE_DIE);
+			}
+		}
 	}
 
 	//normal goomba
@@ -105,7 +121,8 @@ void CMario::OnCollisionEnter(LPCOLLISIONEVENT collisionEvent) {
 		//kill by tail (mario face the enemy can kill)
 		if (this->isTailing && e->ny <= 0 && e->nx * this->nx < 0 && abs((long)(GetTickCount() - tailingStartTime - MARIO_TAILING_TIME / 2)) <= 60) {
 			goomba->SetState(GOOMBA_STATE_DIE);
-			goomba->SetSpeed(this->nx * GOOMBA_WALKING_SPEED, -GOOMBA_DIE_DEFLECT_SPEED);
+			goomba->SetSpeed(this->nx * GOOMBA_WALKING_SPEED * 2, -GOOMBA_DIE_DEFLECT_SPEED);
+			return;
 		}
 
 		// jump on top >> kill Goomba and deflect a bit 
@@ -117,52 +134,74 @@ void CMario::OnCollisionEnter(LPCOLLISIONEVENT collisionEvent) {
 				vy = -MARIO_JUMP_DEFLECT_SPEED;
 			}
 		}
+
+		else if (e->nx != 0)
+		{
+			if (untouchable == 0)
+			{
+				if (level > MARIO_LEVEL_SMALL)
+				{
+					this->level--;
+					StartUntouchable();
+				}
+				else
+					SetState(MARIO_STATE_DIE);
+			}
+		}
 	} // if Goomba
 
 	//Koopas
 	else if (dynamic_cast<CKoopas*>(e->obj)) {
 		CKoopas* koopas = dynamic_cast<CKoopas*>(e->obj);
+
+		//kick or hold shell
+		if (koopas->IsShelling()) {
+			float kooX, kooY, dir;
+			koopas->GetPosition(kooX, kooY);
+			dir = (kooX - this->x > 0) ? 1 : -1;
+			nx = dir;
+			koopas->BeKicked(dir);
+			/*koopas->SetSpeed(0.3f, -0.2f);
+			koopas->SetState(KOOPAS_STATE_BE_HELD);*/
+			return;
+		}
+
 		//kill by tail (mario face the enemy can kill)
 		if (this->isTailing && e->ny <= 0 && e->nx * this->nx < 0 && abs((long)(GetTickCount() - tailingStartTime - MARIO_TAILING_TIME / 2)) <= 60) {
 			if (koopas->HasWings()) {
 				koopas->LoseWings();
 			}
 			koopas->ShellUp();
-			koopas->SetSpeed(this->nx * GOOMBA_WALKING_SPEED, -GOOMBA_DIE_DEFLECT_SPEED);
+			koopas->SetSpeed(this->nx * KOOPAS_WALKING_SPEED * 2, -KOOPAS_DIE_DEFLECT_SPEED);
+			return;
 		}
 		else if (e->ny < 0) {
 			if (koopas->HasWings()) {
 				koopas->LoseWings();
+				
 			}
 			else {
 				koopas->ShellDown();
 			}
+			vy = -MARIO_JUMP_DEFLECT_SPEED;
+			this->vx = this->nx * 0.1f;
+			return;
 		}
-		if (koopas->IsShelling()) {
-			
-		}
-	}
 
-	//enemy
-	if (dynamic_cast<LPENEMY>(e->obj)) {
-		LPENEMY enemy = dynamic_cast<LPENEMY>(e->obj);
-		if (e->nx != 0)
+		else if (e->nx != 0)
 		{
 			if (untouchable == 0)
 			{
-				if (enemy->GetState() != GOOMBA_STATE_DIE)
+				if (level > MARIO_LEVEL_SMALL)
 				{
-					if (level > MARIO_LEVEL_SMALL)
-					{
-						this->level--;
-						StartUntouchable();
-					}
-					else
-						SetState(MARIO_STATE_DIE);
+					this->level--;
+					StartUntouchable();
 				}
+				else
+					SetState(MARIO_STATE_DIE);
 			}
 		}
-	}
+	}//koopas
 
 	else if (dynamic_cast<CPortal*>(e->obj))
 	{
@@ -469,6 +508,13 @@ void CMario::SetState(int state)
 		this->runningStartTime = 0;
 		this->collisionState = NONE;
 		break;
+	}
+
+	if (state == MARIO_STATE_RUNNING_LEFT || state == MARIO_STATE_RUNNING_RIGHT) {
+		canHold = true;
+	}
+	else {
+		canHold = false;
 	}
 }
 

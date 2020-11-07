@@ -18,6 +18,7 @@ CKoopas::CKoopas(float x, float y, int color, bool isPara) {
 	this->isStatic = false;
 	SetState(KOOPAS_STATE_PATROL);
 	this->nx = -1;
+	this->kickedCollisionStack = KOOPAS_KICKED_STACK;
 	this->isPara = isPara;
 	this->color = color;
 	if (isPara) {
@@ -38,7 +39,7 @@ void CKoopas::GetBoundingBox(float& left, float& top, float& right, float& botto
 	top = y;
 	right = x + KOOPAS_BBOX_WIDTH;
 
-	if (state == KOOPAS_STATE_SHELL)
+	if (state != KOOPAS_STATE_PATROL)
 		bottom = y + KOOPAS_BBOX_HEIGHT_SHELL;
 	else
 		bottom = y + KOOPAS_BBOX_HEIGHT;
@@ -70,6 +71,7 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 	case KOOPAS_STATE_BE_KICKED:
 		this->isKicked = true;
 		this->vx = this->nx * KOOPAS_KICKED_SPEED;
+		break;
 	case KOOPAS_STATE_SHELL:
 		this->isShelling = true;
 		this->vx = 0;
@@ -177,13 +179,51 @@ void CKoopas::Render()
 void CKoopas::SetState(int state)
 {
 	CGameObject::SetState(state);
-
+	switch (state) {
+	case KOOPAS_STATE_BE_HELD:
+		this->isBeingHeld = true;
+		break;
+	case KOOPAS_STATE_BE_KICKED:
+		this->isKicked = true;
+		this->vx = this->nx * KOOPAS_KICKED_SPEED;
+		break;
+	case KOOPAS_STATE_SHELL:
+		this->isShelling = true;
+		this->vx = 0;
+		break;
+	case KOOPAS_STATE_PATROL:
+		if (this->x > this->maxPatrolX) {
+			this->vx = -KOOPAS_WALKING_SPEED;
+			this->nx = -1;
+		}
+		else if (this->x < this->minPatrolX) {
+			this->vx = KOOPAS_WALKING_SPEED;
+			this->nx = 1;
+		}
+		else {
+			this->vx = KOOPAS_WALKING_SPEED * this->nx;
+		}
+		break;
+	}
 }
 
 void CKoopas::OnCollisionEnter(LPCOLLISIONEVENT collision) {
 	if (dynamic_cast<LPENEMY>(collision->obj)) {
 		if (collision->ny > 0) {
 			this->y -= 10;
+		}
+	}
+	if (collision->nx != 0) {
+		float colObjX, colObjY;
+		collision->obj->GetPosition(colObjX, colObjY);
+		if (abs(colObjY - this->y) < KOOPAS_BBOX_HEIGHT) {
+			this->nx = -this->nx;
+			this->vx = -this->vx;
+			this->kickedCollisionStack--;
+			if (kickedCollisionStack == 0) {
+				isDeath = true;
+				collisionState = NONE;
+			}
 		}
 	}
 }
@@ -195,6 +235,7 @@ void CKoopas::OnTriggerEnter(LPCOLLISIONEVENT trigger) {
 void CKoopas::Reset() {
 	CEnemy::Reset();
 	this->nx = -1;
+	this->kickedCollisionStack = KOOPAS_KICKED_STACK;
 	if (isPara) {
 		this->hasWings = true;
 		this->patrolState = HIGH_JUMP;
@@ -210,4 +251,10 @@ void CKoopas::LoseWings() {
 	this->hasWings = false;
 	this->patrolState = WALKING;
 	this->y -= 10;
+}
+
+void CKoopas::BeKicked(int dir) {
+	this->nx = dir;
+	SetState(KOOPAS_STATE_BE_KICKED);
+	//this->vx = nx * KOOPAS_KICKED_SPEED;
 }
