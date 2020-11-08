@@ -184,8 +184,11 @@ public:
 	bool IsHolding() { return this->isHolding; }
 	bool IsKicking() { return this->isKicking; }
 	bool IsTailing() { return this->isTailing; }
+	bool IsUntouchable() { return this->untouchable; }
 
-	void Hold();
+	void Hold(CKoopas* koopas);
+	void Kick(int dir);
+	void LoseLevel();
 
 	int GetLevel() { return this->level; }
 

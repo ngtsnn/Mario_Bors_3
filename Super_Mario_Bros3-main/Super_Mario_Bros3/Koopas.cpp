@@ -192,10 +192,27 @@ void CKoopas::OnCollisionEnter(LPCOLLISIONEVENT collision) {
 			this->y -= 3;
 		}
 	}
+
+	if (dynamic_cast<CMario*>(collision->obj) && state == KOOPAS_STATE_SHELL) {
+		CMario* player = dynamic_cast<CMario*>(collision->obj);
+		float playerX, playerY, dir;
+		player->GetPosition(playerX, playerY);
+		dir = (this->x - playerX > 0) ? 1 : -1;
+		this->BeKicked(dir);
+		player->SetState(MARIO_STATE_KICK);
+		/*koopas->SetSpeed(0.3f, -0.2f);
+		koopas->SetState(KOOPAS_STATE_BE_HELD);*/
+		return;
+	}
+
 	if (collision->nx != 0) {
 		float colObjX, colObjY;
 		collision->obj->GetPosition(colObjX, colObjY);
-		if (abs(colObjY - this->y) < KOOPAS_BBOX_HEIGHT && state == KOOPAS_STATE_BE_KICKED) {
+		if (dynamic_cast<LPENEMY>(collision->obj)) {
+			LPENEMY enemy = dynamic_cast<LPENEMY>(collision->obj);
+			enemy->Die();
+		}
+		else if (abs(colObjY - this->y) < KOOPAS_BBOX_HEIGHT && state == KOOPAS_STATE_BE_KICKED) {
 			this->nx = -this->nx;
 			this->vx = -this->vx;
 			this->kickedCollisionStack--;

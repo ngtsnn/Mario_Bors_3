@@ -69,4 +69,5 @@ public:
 	virtual void LoseWings();
 	virtual void BeKicked(int dir);
 	virtual void BeHeld();
+	virtual void Die() { CEnemy::Die(); collisionState = NONE; }
 };

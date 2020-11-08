@@ -65,7 +65,16 @@ void CGoomba::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 void CGoomba::OnCollisionEnter(LPCOLLISIONEVENT collision) {
 	if (dynamic_cast<LPENEMY>(collision->obj)) {
 		if (collision->ny > 0) {
-			this->y -= 10;
+			this->y -= 3;
+		}
+	}
+
+	if (collision->nx != 0) {
+		float colObjX, colObjY;
+		collision->obj->GetPosition(colObjX, colObjY);
+		if (abs(colObjY - this->y) < GOOMBA_NORMAL_BBOX_HEIGHT) {
+			this->nx = -this->nx;
+			this->vx = -this->vx;
 		}
 	}
 }
@@ -234,6 +243,15 @@ void CParaGoomba::OnCollisionEnter(LPCOLLISIONEVENT collision) {
 	if (dynamic_cast<LPENEMY>(collision->obj)) {
 		if (collision->ny > 0) {
 			this->y -= 10;
+		}
+	}
+
+	if (collision->nx != 0) {
+		float colObjX, colObjY;
+		collision->obj->GetPosition(colObjX, colObjY);
+		if (abs(colObjY - this->y) < GOOMBA_NORMAL_BBOX_HEIGHT) {
+			this->nx = -this->nx;
+			this->vx = -this->vx;
 		}
 	}
 }

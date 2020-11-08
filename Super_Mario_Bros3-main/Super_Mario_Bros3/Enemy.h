@@ -28,6 +28,8 @@ public:
 	virtual bool IsDeath() { return this->isDeath; }
 	virtual void SetPatrol(float minX, float maxX) { this->minPatrolX = minX; this->maxPatrolX = maxX; }
 
+	virtual void Die() { this->isDeath = true; }
+
 	virtual void Reset();
 };
 
