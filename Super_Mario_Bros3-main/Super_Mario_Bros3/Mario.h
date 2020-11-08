@@ -181,13 +181,16 @@ public:
 
 	bool IsGrounded() { return this->isGrounded; }
 	bool CanFly() { return this->runningStack > MARIO_RUNNING_STACK && this->level == MARIO_LEVEL_TAIL; }
+	bool CanHold() { return this->canHold; }
 	bool IsHolding() { return this->isHolding; }
 	bool IsKicking() { return this->isKicking; }
 	bool IsTailing() { return this->isTailing; }
 	bool IsUntouchable() { return this->untouchable; }
+	void SetCanHold(bool canHold) { this->canHold = canHold; }
 
 	void Hold(CKoopas* koopas);
 	void Kick(int dir);
+	void Release();
 	void LoseLevel();
 
 	int GetLevel() { return this->level; }

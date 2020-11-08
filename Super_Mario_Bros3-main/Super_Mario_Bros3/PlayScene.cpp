@@ -411,6 +411,12 @@ void CPlayScenceKeyHandler::KeyState(BYTE* states)
 
 	// disable control key when Mario die 
 	if (mario->GetState() == MARIO_STATE_DIE) return;
+	if (game->IsKeyDown(DIK_X)) {
+		mario->SetCanHold(true);
+	}
+	else {
+		mario->SetCanHold(false);
+	}
 	if (game->IsKeyDown(DIK_RIGHT))
 	{
 		if (vx < 0) {

@@ -24,6 +24,7 @@ CMario::CMario(float x, float y) : CGameObject()
 	this->isGrounded = false;
 	this->isUsingGravity = true;
 	this->isStatic = false;
+	this->koopas = NULL;
 	this->runningStack = 0;
 	this->runningStartTime = 0;
 	this->collisionState = COLLISION;
@@ -64,6 +65,68 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 	{
 		isTailing = false;
 		tailingStartTime = 0;
+	}
+
+	//holding //fix it later
+	if (isHolding) {
+		if (!canHold) {
+			Release();
+		}
+		if (this->koopas) {
+			if (this->koopas->GetState() == KOOPAS_STATE_PATROL) {
+				LoseLevel();
+				this->koopas = NULL;
+				return;
+			}
+			float koopasX, koopasY;
+			if (level == MARIO_LEVEL_SMALL) {
+
+				if (this->nx > 0) {
+					koopasX = this->x + (MARIO_SMALL_BBOX_WIDTH - 5);
+					koopasY = this->y - 5;
+				}
+				else {
+					koopasX = this->x - (MARIO_SMALL_BBOX_WIDTH - 5);
+					koopasY = this->y - 5;
+				}
+				
+			} 
+			else if (level == MARIO_LEVEL_BIG) {
+				if (this->nx > 0) {
+					koopasX = this->x + (MARIO_BIG_BBOX_WIDTH - 5);
+					koopasY = this->y - 5;
+				}
+				else {
+					koopasX = this->x - (MARIO_BIG_BBOX_WIDTH - 5);
+					koopasY = this->y - 5;
+				}
+
+			}
+			else if (level == MARIO_LEVEL_TAIL) {
+				if (this->nx > 0) {
+					koopasX = this->x + (MARIO_TAIL_BBOX_WIDTH - 5);
+					koopasY = this->y - 5;
+				}
+				else {
+					koopasX = this->x - (MARIO_TAIL_BBOX_WIDTH - 5);
+					koopasY = this->y - 5;
+				}
+
+			}
+			else if (level == MARIO_LEVEL_FIRE) {
+				if (this->nx > 0) {
+					koopasX = this->x + (MARIO_FIRE_BBOX_WIDTH - 5);
+					koopasY = this->y - 5;
+				}
+				else {
+					koopasX = this->x - (MARIO_FIRE_BBOX_WIDTH - 5);
+					koopasY = this->y - 5;
+				}
+
+			}
+			this->koopas->SetPosition(koopasX, koopasY);
+		}
+
 	}
 	
 
@@ -517,13 +580,6 @@ void CMario::SetState(int state)
 		this->collisionState = NONE;
 		break;
 	}
-
-	if (state == MARIO_STATE_RUNNING_LEFT || state == MARIO_STATE_RUNNING_RIGHT) {
-		canHold = true;
-	}
-	else {
-		canHold = false;
-	}
 }
 
 void CMario::GetBoundingBox(float& left, float& top, float& right, float& bottom)
@@ -566,6 +622,7 @@ void CMario::Reset()
 	this->runningStartTime = 0;
 	this->isUsingGravity = true;
 	this->isStatic = false;
+	this->koopas = NULL;
 	this->collisionState = COLLISION;
 }
 
@@ -578,7 +635,65 @@ float CMario::Clamp(float value, float min, float max) {
 }
 
 void CMario::Hold(CKoopas* koopas) {
+	if (!this->koopas) {
+		this->koopas = koopas;
+	}
 
+	float koopasX, koopasY;
+	if (level == MARIO_LEVEL_SMALL) {
+		if (this->nx > 0) {
+			koopasX = this->x + (MARIO_SMALL_BBOX_WIDTH - 5);
+			koopasY = this->y - 5;
+		}
+		else {
+			koopasX = this->x - (MARIO_SMALL_BBOX_WIDTH - 5);
+			koopasY = this->y - 5;
+		}
+
+	}
+	else if (level == MARIO_LEVEL_BIG) {
+		if (this->nx > 0) {
+			koopasX = this->x + (MARIO_BIG_BBOX_WIDTH - 5);
+			koopasY = this->y - 2;
+		}
+		else {
+			koopasX = this->x - (MARIO_BIG_BBOX_WIDTH - 5);
+			koopasY = this->y - 5;
+		}
+
+	}
+	else if (level == MARIO_LEVEL_TAIL) {
+		if (this->nx > 0) {
+			koopasX = this->x + (MARIO_TAIL_BBOX_WIDTH - 5);
+			koopasY = this->y - 5;
+		}
+		else {
+			koopasX = this->x - (MARIO_TAIL_BBOX_WIDTH - 5);
+			koopasY = this->y - 5;
+		}
+
+	}
+	else if (level == MARIO_LEVEL_FIRE) {
+		if (this->nx > 0) {
+			koopasX = this->x + (MARIO_FIRE_BBOX_WIDTH - 5);
+			koopasY = this->y - 5;
+		}
+		else {
+			koopasX = this->x - (MARIO_FIRE_BBOX_WIDTH - 5);
+			koopasY = this->y - 5;
+		}
+
+	}
+	this->koopas->SetPosition(koopasX, koopasY);
+	this->isHolding = true;
+
+	
+}
+
+void CMario::Release() {
+	this->koopas->BeKicked(this->nx);
+	this->koopas = NULL;
+	this->isHolding = false;
 }
 
 void CMario::Kick(int dir) {

@@ -51,7 +51,7 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 	CGameObject::Update(dt, coObjects);
 
 	if (GetTickCount() - this->shellingTimeStart > KOOPAS_SHELLING_TIME) {
-		if (isShelling) {
+		if (isShelling && state != KOOPAS_STATE_BE_KICKED) {
 			isShelling = false;
 			state = KOOPAS_STATE_PATROL;
 			this->y -= (KOOPAS_BBOX_HEIGHT - KOOPAS_BBOX_HEIGHT_SHELL + 3);
@@ -198,8 +198,14 @@ void CKoopas::OnCollisionEnter(LPCOLLISIONEVENT collision) {
 		float playerX, playerY, dir;
 		player->GetPosition(playerX, playerY);
 		dir = (this->x - playerX > 0) ? 1 : -1;
-		this->BeKicked(dir);
-		player->SetState(MARIO_STATE_KICK);
+		if (player->CanHold()) {
+			SetState(KOOPAS_STATE_BE_HELD);
+			player->Hold(this);
+		}
+		else {
+			this->BeKicked(dir);
+			player->SetState(MARIO_STATE_KICK);
+		}
 		/*koopas->SetSpeed(0.3f, -0.2f);
 		koopas->SetState(KOOPAS_STATE_BE_HELD);*/
 		return;
