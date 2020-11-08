@@ -185,6 +185,7 @@ public:
 	bool IsKicking() { return this->isKicking; }
 	bool IsTailing() { return this->isTailing; }
 
+	void Hold();
 
 	int GetLevel() { return this->level; }
 

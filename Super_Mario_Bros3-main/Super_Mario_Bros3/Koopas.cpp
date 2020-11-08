@@ -1,4 +1,5 @@
 #include "Koopas.h"
+#include "Mario.h"
 
 CKoopas::CKoopas()
 {
@@ -54,6 +55,7 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 			isShelling = false;
 			state = KOOPAS_STATE_PATROL;
 			this->y -= (KOOPAS_BBOX_HEIGHT - KOOPAS_BBOX_HEIGHT_SHELL + 3);
+			this->kickedCollisionStack = KOOPAS_KICKED_STACK;
 		}
 	}
 
@@ -67,6 +69,7 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 	switch (state) {
 	case KOOPAS_STATE_BE_HELD:
 		this->isBeingHeld = true;
+		this->vx = this->vy = 0;
 		break;
 	case KOOPAS_STATE_BE_KICKED:
 		this->isKicked = true;
@@ -95,77 +98,52 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 
 void CKoopas::ShellDown() 
 { 
-	this->SetState(KOOPAS_STATE_SHELL); 
+	this->SetState(KOOPAS_STATE_SHELL);
+	this->isShellUp = false;
 	this->shellingTimeStart = GetTickCount();
 	this->y -= 10;
 }
 
 void CKoopas::ShellUp() {
-	if (this->color == KOOPAS_COLOR_GREEN) {
-		isShellUp = true;
-	}
 	this->ShellDown();
-	
+	isShellUp = true;
 }
 
 void CKoopas::Render()
 {
 	int ani = 0;
 	if (state == KOOPAS_STATE_BE_KICKED) {
-		if (color == KOOPAS_COLOR_GREEN) {
-			ani = KOOPAS_GREEN_ANI_SHELL_SPINNING;
+		if (isShellUp) {
+			ani = KOOPAS_ANI_SHELL_SPIN_UP + this->color;
 		}
-		else if(color == KOOPAS_COLOR_RED){
-			ani = KOOPAS_RED_ANI_SHELL_SPINNING;
+		else {
+			ani = KOOPAS_ANI_SHELL_SPINNING + this->color;
 		}
 	}
 	else if (state == KOOPAS_STATE_SHELL || state == KOOPAS_STATE_BE_HELD) {
 		if (isShellUp) {
-			ani = KOOPAS_GREEN_ANI_SHELL_UP;
+			ani = KOOPAS_ANI_SHELL_UP + this->color;
 		}
-		else if (color == KOOPAS_COLOR_GREEN) {
-			ani = KOOPAS_GREEN_ANI_SHELL_DOWN;
-		}
-		else if (color == KOOPAS_COLOR_RED) {
-			ani = KOOPAS_RED_ANI_SHELL_DOWN;
+		else {
+			ani = KOOPAS_ANI_SHELL_DOWN + this->color;
 		}
 	}
 	else if (state == KOOPAS_STATE_PATROL)
 	{
 		if (nx < 0) {
 			if (hasWings) {
-				if (color == KOOPAS_COLOR_GREEN) {
-					ani = KOOPAS_GREEN_ANI_FLYING_LEFT;
-				}
-				else if (color == KOOPAS_COLOR_RED) {
-					ani = KOOPAS_RED_ANI_FLYING_LEFT;
-				}
+				ani = KOOPAS_ANI_FLYING_LEFT + this->color;
 			}
 			else {
-				if (color == KOOPAS_COLOR_GREEN) {
-					ani = KOOPAS_GREEN_ANI_WALKING_LEFT;
-				}
-				else if (color == KOOPAS_COLOR_RED) {
-					ani = KOOPAS_RED_ANI_WALKING_LEFT;
-				}
+				ani = KOOPAS_ANI_WALKING_LEFT + this->color;
 			}
 		}
 		else if (nx > 0) {
 			if (hasWings) {
-				if (color == KOOPAS_COLOR_GREEN) {
-					ani = KOOPAS_GREEN_ANI_FLYING_RIGHT;
-				}
-				else if (color == KOOPAS_COLOR_RED) {
-					ani = KOOPAS_RED_ANI_FLYING_RIGHT;
-				}
+				ani = KOOPAS_ANI_FLYING_RIGHT + this->color;
 			}
 			else {
-				if (color == KOOPAS_COLOR_GREEN) {
-					ani = KOOPAS_GREEN_ANI_WALKING_RIGHT;
-				}
-				else if (color == KOOPAS_COLOR_RED) {
-					ani = KOOPAS_RED_ANI_WALKING_RIGHT;
-				}
+				ani = KOOPAS_ANI_WALKING_RIGHT + this->color;
 			}
 		}
 		
@@ -182,6 +160,7 @@ void CKoopas::SetState(int state)
 	switch (state) {
 	case KOOPAS_STATE_BE_HELD:
 		this->isBeingHeld = true;
+		this->vx = 0;
 		break;
 	case KOOPAS_STATE_BE_KICKED:
 		this->isKicked = true;
@@ -210,13 +189,13 @@ void CKoopas::SetState(int state)
 void CKoopas::OnCollisionEnter(LPCOLLISIONEVENT collision) {
 	if (dynamic_cast<LPENEMY>(collision->obj)) {
 		if (collision->ny > 0) {
-			this->y -= 10;
+			this->y -= 3;
 		}
 	}
 	if (collision->nx != 0) {
 		float colObjX, colObjY;
 		collision->obj->GetPosition(colObjX, colObjY);
-		if (abs(colObjY - this->y) < KOOPAS_BBOX_HEIGHT) {
+		if (abs(colObjY - this->y) < KOOPAS_BBOX_HEIGHT && state == KOOPAS_STATE_BE_KICKED) {
 			this->nx = -this->nx;
 			this->vx = -this->vx;
 			this->kickedCollisionStack--;
@@ -257,4 +236,8 @@ void CKoopas::BeKicked(int dir) {
 	this->nx = dir;
 	SetState(KOOPAS_STATE_BE_KICKED);
 	//this->vx = nx * KOOPAS_KICKED_SPEED;
+}
+
+void CKoopas::BeHeld() {
+	SetState(KOOPAS_STATE_BE_HELD);
 }

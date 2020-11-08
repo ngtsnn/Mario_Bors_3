@@ -72,6 +72,13 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 void CMario::OnCollisionEnter(LPCOLLISIONEVENT collisionEvent) {
 	LPCOLLISIONEVENT e = collisionEvent;
 
+	if (dynamic_cast<LPENEMY>(e->obj)) {
+		if (e->ny > 0) {
+			this->y -= 10;
+		}
+
+	}
+
 	if (dynamic_cast<CParaGoomba*>(e->obj)) // if e->obj is Goomba 
 	{
 		CParaGoomba* goomba = dynamic_cast<CParaGoomba*>(e->obj);
@@ -161,6 +168,7 @@ void CMario::OnCollisionEnter(LPCOLLISIONEVENT collisionEvent) {
 			dir = (kooX - this->x > 0) ? 1 : -1;
 			nx = dir;
 			koopas->BeKicked(dir);
+			SetState(MARIO_STATE_KICK);
 			/*koopas->SetSpeed(0.3f, -0.2f);
 			koopas->SetState(KOOPAS_STATE_BE_HELD);*/
 			return;
@@ -226,6 +234,42 @@ void CMario::Render()
 	//else if (vy != 0) {
 	//	ani = MARIO_ANI_SMALL_JUMPING_RIGHT;
 	//} //JUMP
+
+	//HOLDING
+	else if (isHolding) {
+		if (level == MARIO_LEVEL_BIG) {
+			if (nx < 0) {
+				ani = MARIO_ANI_BIG_HOLDING_LEFT;
+			}
+			else {
+				ani = MARIO_ANI_BIG_HOLDING_RIGHT;
+			}
+		}
+		else if (level == MARIO_LEVEL_SMALL) {
+			if (nx < 0) {
+				ani = MARIO_ANI_SMALL_HOLDING_LEFT;
+			}
+			else {
+				ani = MARIO_ANI_SMALL_HOLDING_RIGHT;
+			}
+		}
+		else if (level == MARIO_LEVEL_TAIL) {
+			if (nx < 0) {
+				ani = MARIO_ANI_TAIL_HOLDING_LEFT;
+			}
+			else {
+				ani = MARIO_ANI_TAIL_HOLDING_RIGHT;
+			}
+		}
+		else if (level == MARIO_LEVEL_FIRE) {
+			if (nx < 0) {
+				ani = MARIO_ANI_FIRE_HOLDING_LEFT;
+			}
+			else {
+				ani = MARIO_ANI_FIRE_HOLDING_RIGHT;
+			}
+		}
+	} //HOLDING
 
 	//TALING
 	else if (isTailing) {
@@ -567,5 +611,9 @@ float CMario::Clamp(float value, float min, float max) {
 	if (value > max)
 		return max;
 	return value;
+}
+
+void CMario::Hold() {
+
 }
 

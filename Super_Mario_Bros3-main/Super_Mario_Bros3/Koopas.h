@@ -4,7 +4,7 @@
 #include "Enemy.h"
 
 #define KOOPAS_COLOR_GREEN	0
-#define KOOPAS_COLOR_RED	1
+#define KOOPAS_COLOR_RED	8
 
 #define KOOPAS_WALKING_SPEED		0.04f
 #define KOOPAS_SHELLING_TIME		6000
@@ -23,19 +23,14 @@
 #define KOOPAS_STATE_BE_HELD		300
 #define KOOPAS_STATE_BE_KICKED		400
 
-#define KOOPAS_GREEN_ANI_WALKING_LEFT		0
-#define KOOPAS_GREEN_ANI_WALKING_RIGHT		1
-#define KOOPAS_GREEN_ANI_FLYING_LEFT		2
-#define KOOPAS_GREEN_ANI_SHELL_DOWN			3
-#define KOOPAS_GREEN_ANI_SHELL_UP			4	
-#define KOOPAS_RED_ANI_WALKING_LEFT			5
-#define KOOPAS_RED_ANI_FLYING_LEFT			6
-#define KOOPAS_RED_ANI_SHELL_DOWN			7
-#define KOOPAS_GREEN_ANI_SHELL_SPINNING		8
-#define KOOPAS_RED_ANI_SHELL_SPINNING		9
-#define KOOPAS_GREEN_ANI_FLYING_RIGHT		10
-#define KOOPAS_RED_ANI_WALKING_RIGHT		11
-#define KOOPAS_RED_ANI_FLYING_RIGHT			12
+#define KOOPAS_ANI_WALKING_LEFT			0
+#define KOOPAS_ANI_WALKING_RIGHT		1
+#define KOOPAS_ANI_FLYING_LEFT			2
+#define KOOPAS_ANI_FLYING_RIGHT			3
+#define KOOPAS_ANI_SHELL_DOWN			4
+#define KOOPAS_ANI_SHELL_UP				5
+#define KOOPAS_ANI_SHELL_SPINNING		6
+#define KOOPAS_ANI_SHELL_SPIN_UP		7
 
 class CKoopas : public CEnemy
 {
@@ -65,7 +60,7 @@ public:
 	virtual void Reset();
 
 	virtual bool IsPara() { return this->isPara; }
-	virtual bool IsShelling() { return this->isShelling; }
+	virtual bool IsShelling() { return this->state == KOOPAS_STATE_SHELL; }
 	virtual bool HasWings() { return this->hasWings; }
 	virtual int GetColor() { return this->color; }
 
@@ -73,4 +68,5 @@ public:
 	virtual void ShellUp();
 	virtual void LoseWings();
 	virtual void BeKicked(int dir);
+	virtual void BeHeld();
 };
