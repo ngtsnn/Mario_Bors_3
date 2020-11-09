@@ -67,6 +67,12 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 		tailingStartTime = 0;
 	}
 
+	//reset jumping
+	if (GetTickCount() - jumpingStartTime > MARIO_JUMP_TIME || this->vy > 0) {
+		isJumping = false;
+		jumpingStartTime = 0;
+	}
+
 	//holding //fix it later
 	if (isHolding) {
 		if (!canHold) {
@@ -134,10 +140,16 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 
 void CMario::OnCollisionEnter(LPCOLLISIONEVENT collisionEvent) {
 	LPCOLLISIONEVENT e = collisionEvent;
+	if (e->ny < 0) {
+		isGrounded = true;
+	}
+	else {
+		isGrounded = false;
+	}
 
 	if (dynamic_cast<LPENEMY>(e->obj)) {
 		if (e->ny > 0) {
-			this->y -= 10;
+			this->y -= 5;
 		}
 
 	}
@@ -557,8 +569,17 @@ void CMario::SetState(int state)
 		break;
 	case MARIO_STATE_JUMP:
 		//if (this->vy <= 0.03f && this->vy > -0.03f)
-		//if (this->isGrounded == 1)
-		vy = -MARIO_JUMP_SPEED_Y;
+		if (this->isGrounded == true) {
+			vy = -MARIO_JUMP_ACCELERATION * dt;
+			this->isGrounded = false;
+			isJumping = true;
+			jumpingStartTime = GetTickCount();
+		}
+		else if (isJumping) {
+			vy = -MARIO_JUMP_ACCELERATION * dt;
+			
+		}
+
 		break;
 	case MARIO_STATE_IDLE:
 		this->vx -= this->vx * MARIO_MUY_FRICTION * dt * 1.2f;

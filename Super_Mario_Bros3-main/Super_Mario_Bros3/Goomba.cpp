@@ -68,13 +68,15 @@ void CGoomba::OnCollisionEnter(LPCOLLISIONEVENT collision) {
 			this->y -= 3;
 		}
 	}
-
+	
+	//goomba walk through another
 	if (collision->nx != 0) {
 		float colObjX, colObjY;
 		collision->obj->GetPosition(colObjX, colObjY);
 		if (abs(colObjY - this->y) < GOOMBA_NORMAL_BBOX_HEIGHT) {
-			this->nx = -this->nx;
-			this->vx = -this->vx;
+			/*this->nx = -this->nx;
+			this->vx = -this->vx;*/
+			this->x += this->dx;
 		}
 	}
 }
@@ -246,12 +248,14 @@ void CParaGoomba::OnCollisionEnter(LPCOLLISIONEVENT collision) {
 		}
 	}
 
+	//goomba walk through another
 	if (collision->nx != 0) {
 		float colObjX, colObjY;
 		collision->obj->GetPosition(colObjX, colObjY);
 		if (abs(colObjY - this->y) < GOOMBA_NORMAL_BBOX_HEIGHT) {
-			this->nx = -this->nx;
-			this->vx = -this->vx;
+			/*this->nx = -this->nx;
+			this->vx = -this->vx;*/
+			this->x += this->dx;
 		}
 	}
 }

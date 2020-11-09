@@ -218,7 +218,7 @@ void CKoopas::OnCollisionEnter(LPCOLLISIONEVENT collision) {
 			LPENEMY enemy = dynamic_cast<LPENEMY>(collision->obj);
 			enemy->Die();
 		}
-		else if (abs(colObjY - this->y) < KOOPAS_BBOX_HEIGHT && state == KOOPAS_STATE_BE_KICKED) {
+		else if (abs(colObjY - this->y) < KOOPAS_BBOX_HEIGHT && (state == KOOPAS_STATE_BE_KICKED)) {
 			this->nx = -this->nx;
 			this->vx = -this->vx;
 			this->kickedCollisionStack--;

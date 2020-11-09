@@ -381,9 +381,10 @@ void CPlayScenceKeyHandler::OnKeyDown(int KeyCode)
 		if (mario->GetLevel() == MARIO_LEVEL_TAIL && !mario->IsTailing())
 			mario->SetState(MARIO_STATE_TURNING_TAIL);
 		break;
-	case DIK_Z:
-		mario->SetState(MARIO_STATE_JUMP);
-		break;
+	//case DIK_Z:
+	//	//if (mario->IsGrounded())
+	//	mario->SetState(MARIO_STATE_JUMP);
+	//	break;
 	case DIK_U:
 		mario->SetLevel(MARIO_LEVEL_SMALL);
 		break;
@@ -417,6 +418,11 @@ void CPlayScenceKeyHandler::KeyState(BYTE* states)
 	else {
 		mario->SetCanHold(false);
 	}
+
+	if (game->IsKeyDown(DIK_Z)) {
+		mario->SetState(MARIO_STATE_JUMP);
+	}
+
 	if (game->IsKeyDown(DIK_RIGHT))
 	{
 		if (vx < 0) {

@@ -10,6 +10,8 @@
 #define MARIO_DIE_DEFLECT_SPEED		0.5f
 #define MARIO_ACCELERATION			0.0007f
 #define MARIO_MUY_FRICTION			0.001f
+#define MARIO_JUMP_TIME				300
+#define MARIO_JUMP_ACCELERATION		0.01f
 
 #define MARIO_RUNNING_STACK			6
 #define MARIO_RUNNING_STACK_TIME	100
@@ -155,6 +157,8 @@ class CMario : public CGameObject
 	bool isHolding = 0;
 	bool canHold;
 
+	bool isJumping = 0;
+	DWORD jumpingStartTime;
 	
 	bool isTailing = 0;
 	DWORD tailingStartTime;
@@ -179,7 +183,7 @@ public:
 	void SetLevel(int l);
 	void StartUntouchable() { untouchable = 1; untouchable_start = GetTickCount(); }
 
-	bool IsGrounded() { return this->isGrounded; }
+	bool CanJump() { return this->isGrounded; }
 	bool CanFly() { return this->runningStack > MARIO_RUNNING_STACK && this->level == MARIO_LEVEL_TAIL; }
 	bool CanHold() { return this->canHold; }
 	bool IsHolding() { return this->isHolding; }
